@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estudos</title>
+  <style>
+    body {
+      background-color: #1c1c1c;
+      color: #f5f5f5;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ddd;
+    }
+    .card {
+      background-color: #2a2a2a;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    input, button, select {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      margin: 5px 0;
+    }
+    button {
+      background-color: #555;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #777;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>📘 Plataforma de Estudos</h1>
+  <div class="card">
+    <h2>Adicionar Atividade</h2>
+    <input id="materia" type="text" placeholder="Matéria" />
+    <input id="data" type="date" />
+    <input id="certas" type="number" placeholder="Acertos" />
+    <input id="erradas" type="number" placeholder="Erros" />
+    <button onclick="adicionar()">Adicionar</button>
+  </div>
+
+  <div class="card">
+    <h2>Atividades Registradas</h2>
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Matéria</th>
+          <th>Data</th>
+          <th>Certas</th>
+          <th>Erradas</th>
+          <th>Revisão</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const tabela = document.querySelector("#tabela tbody");
+    const atividades = JSON.parse(localStorage.getItem("atividades")) || [];
+
+    function salvar() {
+      localStorage.setItem("atividades", JSON.stringify(atividades));
+    }
+
+    function atualizarTabela() {
+      tabela.innerHTML = "";
+      atividades.forEach((a) => {
+        const tr = document.createElement("tr");
+        const revisao = calcularRevisao(a.data);
+        tr.innerHTML = `
+          <td>${a.materia}</td>
+          <td>${a.data}</td>
+          <td>${a.certas}</td>
+          <td>${a.erradas}</td>
+          <td>${revisao}</td>
+        `;
+        tabela.appendChild(tr);
+      });
+    }
+
+    function adicionar() {
+      const materia = document.getElementById("materia").value;
+      const data = document.getElementById("data").value;
+      const certas = document.getElementById("certas").value;
+      const erradas = document.getElementById("erradas").value;
+      if (!materia || !data) return alert("Preencha todos os campos!");
+      atividades.push({ materia, data, certas, erradas });
+      salvar();
+      atualizarTabela();
+      document.getElementById("materia").value = "";
+      document.getElementById("data").value = "";
+      document.getElementById("certas").value = "";
+      document.getElementById("erradas").value = "";
+    }
+
+    function calcularRevisao(dataStr) {
+      const data = new Date(dataStr);
+      const hoje = new Date();
+      const diff = Math.floor((hoje - data) / (1000 * 60 * 60 * 24));
+      if (diff < 3) return "🔵 Próxima revisão em breve";
+      if (diff < 7) return "🟡 Revisar esta semana";
+      return "🔴 Revisar agora!";
+    }
+
+    atualizarTabela();
+  </script>
+</body>
+</html>
