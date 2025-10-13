@@ -1,2 +1,0 @@
-# Estudos
-Plataforma para estudos
