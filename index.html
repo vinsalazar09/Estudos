@@ -1,129 +1,132 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estudos</title>
-  <style>
-    body {
-      background-color: #1c1c1c;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #ddd;
-    }
-    .card {
-      background-color: #2a2a2a;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    input, button, select {
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      margin: 5px 0;
-    }
-    button {
-      background-color: #555;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #777;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #444;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estudos — Cronograma Inteligente</title>
+<style>
+  :root{--bg:#1c1c1c;--card:#262626;--muted:#b9c0c7;--border:#333;--accent:#6ea8fe;--ok:#4cd37b;--warn:#f6c453;--danger:#ff6b6b;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#f2f5f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  header{padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(28,28,28,.9);backdrop-filter: blur(6px)}
+  h1{margin:0;font-size:20px} .container{max-width:980px;margin:14px auto;padding:0 12px}
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:14px} @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+  label{font-size:13px;color:var(--muted)}
+  input,select,textarea,button{width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid var(--border);background:#1f1f1f;color:#f2f5f9}
+  textarea{resize:vertical} button{background:#2b2b2b;cursor:pointer} button.primary{background:var(--accent);color:#0b1220;border-color:#4f86e6} button.small{width:auto;padding:6px 10px;font-size:13px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .muted{color:var(--muted);font-size:13px}
+  table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
+  .pill{padding:6px 10px;border-radius:999px;background:#1f1f1f;border:1px solid var(--border);font-size:12px}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)} .section-title{margin:4px 0 8px}
+</style>
 </head>
 <body>
-  <h1>📘 Plataforma de Estudos</h1>
-  <div class="card">
-    <h2>Adicionar Atividade</h2>
-    <input id="materia" type="text" placeholder="Matéria" />
-    <input id="data" type="date" />
-    <input id="certas" type="number" placeholder="Acertos" />
-    <input id="erradas" type="number" placeholder="Erros" />
-    <button onclick="adicionar()">Adicionar</button>
-  </div>
+<header>
+  <h1>Estudos — Cronograma Inteligente</h1>
+  <div class="muted">Planeje por prioridade, acompanhe progresso e gere o estudo do dia.</div>
+</header>
 
-  <div class="card">
-    <h2>Atividades Registradas</h2>
-    <table id="tabela">
-      <thead>
-        <tr>
-          <th>Matéria</th>
-          <th>Data</th>
-          <th>Certas</th>
-          <th>Erradas</th>
-          <th>Revisão</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<div class="container grid">
+  <main>
+    <div class="card">
+      <h3 class="section-title">Gerador do Dia</h3>
+      <div class="row">
+        <div style="flex:1">
+          <label>Data da prova</label>
+          <input type="date" id="examDate">
+        </div>
+        <div style="width:160px">
+          <label>Temas por dia</label>
+          <input type="number" id="perDay" min="1" max="10" value="2">
+        </div>
+        <div style="width:160px">
+          <label>Mostrar concluídos</label>
+          <select id="showDone">
+            <option value="no" selected>Não</option>
+            <option value="yes">Sim</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnGenerate" class="primary small">Gerar plano de hoje</button>
+        <button id="btnClearToday" class="small">Limpar seleção de hoje</button>
+      </div>
+      <div id="summary" class="row" style="margin-top:8px"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+      <div id="todayList"></div>
+    </div>
 
-  <script>
-    const tabela = document.querySelector("#tabela tbody");
-    const atividades = JSON.parse(localStorage.getItem("atividades")) || [];
+    <div class="card" style="margin-top:12px">
+      <h3 class="section-title">Temas cadastrados</h3>
+      <div class="row" style="justify-content:space-between">
+        <div class="muted">Clique em ✅ para marcar o tema como feito hoje.</div>
+        <div class="row">
+          <button id="btnExport" class="small">Exportar JSON</button>
+          <button id="btnImport" class="small">Importar JSON</button>
+          <input id="fileInput" type="file" accept=".json" style="display:none"/>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Tema</th><th>Prioridade</th><th>Dificuldade</th><th>Status</th><th>Acertos/Erros</th><th>Último estudo</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="themesTable"></tbody>
+      </table>
+    </div>
+  </main>
 
-    function salvar() {
-      localStorage.setItem("atividades", JSON.stringify(atividades));
-    }
+  <aside>
+    <div class="card">
+      <h3 class="section-title">Adicionar tema</h3>
+      <label>Tema</label>
+      <input id="tema" placeholder="Ex: Fasceíte plantar">
+      <label style="margin-top:6px">Prioridade</label>
+      <select id="prioridade">
+        <option value="5">5 (máxima)</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1 (baixa)</option>
+      </select>
+      <label style="margin-top:6px">Dificuldade</label>
+      <select id="dificuldade"><option>alta</option><option selected>média</option><option>baixa</option></select>
+      <label style="margin-top:6px">Comentário</label>
+      <textarea id="comentario" rows="3" placeholder="Observações iniciais..."></textarea>
+      <div class="row" style="margin-top:8px"><button id="btnAdd" class="primary">Adicionar tema</button></div>
+    </div>
 
-    function atualizarTabela() {
-      tabela.innerHTML = "";
-      atividades.forEach((a) => {
-        const tr = document.createElement("tr");
-        const revisao = calcularRevisao(a.data);
-        tr.innerHTML = `
-          <td>${a.materia}</td>
-          <td>${a.data}</td>
-          <td>${a.certas}</td>
-          <td>${a.erradas}</td>
-          <td>${revisao}</td>
-        `;
-        tabela.appendChild(tr);
-      });
-    }
+    <div class="card" style="margin-top:12px">
+      <h3 class="section-title">Progresso</h3>
+      <div id="progressPills" class="row"></div>
+    </div>
+  </aside>
+</div>
 
-    function adicionar() {
-      const materia = document.getElementById("materia").value;
-      const data = document.getElementById("data").value;
-      const certas = document.getElementById("certas").value;
-      const erradas = document.getElementById("erradas").value;
-      if (!materia || !data) return alert("Preencha todos os campos!");
-      atividades.push({ materia, data, certas, erradas });
-      salvar();
-      atualizarTabela();
-      document.getElementById("materia").value = "";
-      document.getElementById("data").value = "";
-      document.getElementById("certas").value = "";
-      document.getElementById("erradas").value = "";
-    }
-
-    function calcularRevisao(dataStr) {
-      const data = new Date(dataStr);
-      const hoje = new Date();
-      const diff = Math.floor((hoje - data) / (1000 * 60 * 60 * 24));
-      if (diff < 3) return "🔵 Próxima revisão em breve";
-      if (diff < 7) return "🟡 Revisar esta semana";
-      return "🔴 Revisar agora!";
-    }
-
-    atualizarTabela();
-  </script>
+<script>
+const LSK='cronograma_estudos_v1', LSKS='cronograma_settings_v1';
+let temas=[], todaysIds=new Set();
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function saveLocal(){localStorage.setItem(LSK,JSON.stringify(temas));localStorage.setItem(LSKS,JSON.stringify({examDate:examDate.value||'',perDay:parseInt(perDay.value)||2,showDone:showDone.value,todaysIds:[...todaysIds]}))}
+function loadLocal(){try{const t=JSON.parse(localStorage.getItem(LSK)||'[]');if(Array.isArray(t))temas=t}catch(e){}try{const s=JSON.parse(localStorage.getItem(LSKS)||'{}');if(s.examDate)examDate.value=s.examDate;if(s.perDay)perDay.value=s.perDay;if(s.showDone)showDone.value=s.showDone;if(s.todaysIds)todaysIds=new Set(s.todaysIds)}catch(e){}}
+async function bootstrap(){loadLocal(); if(temas.length===0){try{const r=await fetch('cronograma.json',{cache:'no-store'}); if(r.ok){const d=await r.json(); if(Array.isArray(d)) temas=d.map(t=>({...t,id:t.id||uid()}));}}catch(e){}} renderAll();}
+function daysUntil(s){if(!s)return null;const today=new Date();today.setHours(0,0,0,0);const d=new Date(s);d.setHours(0,0,0,0);return Math.ceil((d-today)/(86400000))}
+function iso(d=new Date()){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+da}
+function renderSummary(){const left=daysUntil(examDate.value),total=temas.length,done=temas.filter(t=>t.status==='concluido').length,pct=total?Math.round(100*done/total):0;summ.innerHTML=`<div class="pill">Temas: ${total}</div><div class="pill ok">Concluídos: ${done}</div><div class="pill">Progresso: ${pct}%</div><div class="pill ${left!==null?(left<=7?'danger':left<=30?'warn':''):''}">Dias até a prova: ${left!==null?left:'-'}</div>`}
+function renderTable(){const show=showDone.value==='yes';tt.innerHTML='';[...temas].sort((a,b)=>(b.prioridade||0)-(a.prioridade||0)).forEach(t=>{if(!show&&t.status==='concluido')return;const tr=document.createElement('tr');tr.innerHTML=`<td>${t.tema}</td><td>${t.prioridade||'-'}</td><td>${t.dificuldade||'-'}</td><td>${t.status||'pendente'}</td><td>${(t.acertos||0)}/${(t.erros||0)}</td><td>${t.dataEstudo||'-'}</td><td><button class="small" onclick="markToday('${t.id}')">✅</button><button class="small" onclick="editAcc('${t.id}')">Acertos/Erros</button><button class="small" onclick="delTema('${t.id}')">Apagar</button></td>`;tt.appendChild(tr)})}
+function renderToday(){todayList.innerHTML='';const n=parseInt(perDay.value)||2,today=iso(new Date());const pend=temas.filter(t=>t.status!=='concluido').sort((a,b)=>(b.prioridade||0)-(a.prioridade||0));if(todaysIds.size===0){for(const t of pend){if(t.dataEstudo===today)continue;todaysIds.add(t.id);if(todaysIds.size>=n)break}saveLocal()}const ids=[...todaysIds];const chosen=pend.filter(t=>ids.includes(t.id));if(chosen.length===0){todayList.innerHTML='<div class="muted">Nenhum tema selecionado para hoje.</div>';return}const ul=document.createElement('ul');ul.style.paddingLeft='18px';chosen.forEach(t=>{const li=document.createElement('li');li.style.margin='8px 0';li.innerHTML=`<strong>${t.tema}</strong> — prioridade ${t.prioridade||'-'} <span class="muted">(${t.dificuldade||'-'})</span><div class="row" style="margin-top:6px"><button class="small ok" onclick="finishTema('${t.id}')">Marcar concluído hoje</button><button class="small" onclick="removeFromToday('${t.id}')">Remover de hoje</button></div>`;ul.appendChild(li)});todayList.appendChild(ul)}
+function renderProgress(){const total=temas.length,done=temas.filter(t=>t.status==='concluido').length,pend=total-done;progressPills.innerHTML=`<div class="pill">Total: ${total}</div><div class="pill ok">Concluídos: ${done}</div><div class="pill">Pendentes: ${pend}</div>`}
+function renderAll(){renderSummary();renderTable();renderToday();renderProgress()}
+function addTema(){const tema=temaInp.value.trim(),prioridade=parseInt(pri.value),dificuldade=diff.value,comentario=com.value.trim();if(!tema)return alert('Digite o tema');temas.push({id:uid(),tema,prioridade,dificuldade,comentario,status:'pendente',acertos:0,erros:0,dataEstudo:''});temaInp.value='';com.value='';saveLocal();renderAll()}
+function delTema(id){if(!confirm('Apagar este tema?'))return;temas=temas.filter(t=>t.id!==id);todaysIds.delete(id);saveLocal();renderAll()}
+function markToday(id){todaysIds.add(id);saveLocal();renderToday()}
+function removeFromToday(id){todaysIds.delete(id);saveLocal();renderToday()}
+function finishTema(id){const t=temas.find(x=>x.id===id);if(!t)return;t.status='concluido';t.dataEstudo=iso(new Date());todaysIds.delete(id);saveLocal();renderAll()}
+function editAcc(id){const t=temas.find(x=>x.id===id);if(!t)return;const a=prompt('Número de acertos',t.acertos||0),e=prompt('Número de erros',t.erros||0),A=parseInt(a),E=parseInt(e);if(!isNaN(A))t.acertos=A;if(!isNaN(E))t.erros=E;if(t.acertos<0)t.acertos=0;if(t.erros<0)t.erros=0;saveLocal();renderAll()}
+function generateToday(){todaysIds.clear();renderToday()}
+function clearToday(){todaysIds.clear();saveLocal();renderToday()}
+function exportJSON(){const data=JSON.stringify(temas,null,2),blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cronograma_export.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
+function importJSON(file){const fr=new FileReader();fr.onload=e=>{try{const arr=JSON.parse(e.target.result);if(!Array.isArray(arr))throw new Error('JSON deve ser um array');temas=arr.map(t=>({...t,id:t.id||uid()}));todaysIds.clear();saveLocal();renderAll()}catch(err){alert('Erro ao importar: '+err.message)}};fr.readAsText(file)}
+const examDate=document.getElementById('examDate'),perDay=document.getElementById('perDay'),showDone=document.getElementById('showDone'),summ=document.getElementById('summary'),todayList=document.getElementById('todayList'),tt=document.getElementById('themesTable'),progressPills=document.getElementById('progressPills'),temaInp=document.getElementById('tema'),pri=document.getElementById('prioridade'),diff=document.getElementById('dificuldade'),com=document.getElementById('comentario');
+document.getElementById('btnAdd').addEventListener('click',addTema);document.getElementById('btnGenerate').addEventListener('click',generateToday);document.getElementById('btnClearToday').addEventListener('click',clearToday);document.getElementById('btnExport').addEventListener('click',exportJSON);document.getElementById('btnImport').addEventListener('click',()=>fileInput.click());fileInput.addEventListener('change',ev=>{const f=ev.target.files[0];if(f)importJSON(f)});['examDate','perDay','showDone'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{saveLocal();renderAll()}));
+bootstrap();
+</script>
 </body>
 </html>
