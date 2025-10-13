@@ -1,11 +1,11 @@
 {
-  "name": "V \u2705 Estudos \u2014 Cronograma Inteligente",
+  "name": "V ✅ Estudos — Cronograma Inteligente",
   "short_name": "Estudos",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#1c1c1c",
-  "theme_color": "#1c1c1c",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
   "icons": [
     {
       "src": "icon-192.png",
