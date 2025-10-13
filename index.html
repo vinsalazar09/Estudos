@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estudos — Cronograma Inteligente</title>
+<title>V ✅ Estudos — Cronograma Inteligente</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1c1c1c">
 <style>
   :root{--bg:#1c1c1c;--card:#262626;--muted:#b9c0c7;--border:#333;--accent:#6ea8fe;--ok:#4cd37b;--warn:#f6c453;--danger:#ff6b6b;}
   *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#f2f5f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
@@ -18,12 +20,13 @@
   table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
   .pill{padding:6px 10px;border-radius:999px;background:#1f1f1f;border:1px solid var(--border);font-size:12px}
   .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)} .section-title{margin:4px 0 8px}
+  .install-tip{margin-top:8px;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 <header>
-  <h1>Estudos — Cronograma Inteligente</h1>
-  <div class="muted">Planeje por prioridade, acompanhe progresso e gere o estudo do dia.</div>
+  <h1>V ✅ Estudos — Cronograma Inteligente</h1>
+  <div class="muted">Planeje por prioridade, acompanhe progresso e gere o estudo do dia. (PWA — funciona offline)</div>
 </header>
 
 <div class="container grid">
@@ -54,6 +57,7 @@
       <div id="summary" class="row" style="margin-top:8px"></div>
       <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
       <div id="todayList"></div>
+      <div id="installTip" class="install-tip"></div>
     </div>
 
     <div class="card" style="margin-top:12px">
@@ -101,6 +105,10 @@
 </div>
 
 <script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installTip').innerHTML='💡 Dica: toque em Compartilhar → Adicionar à Tela de Início para instalar o app.'; });
+
 const LSK='cronograma_estudos_v1', LSKS='cronograma_settings_v1';
 let temas=[], todaysIds=new Set();
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
