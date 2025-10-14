@@ -1,88 +1,467 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plataforma de Estudos | Ortopedia</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plataforma de Estudos Inteligente</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --panel:#141821; --text:#e6e6e6; --muted:#9aa4af;
+    --border:#2a2f3a; --accent:#4da3ff; --accent-2:#28d09a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .container{max-width:1120px;margin:0 auto;padding:1.25rem}
+  header{text-align:center;padding:1.25rem 1rem 0.5rem;border-bottom:1px solid var(--border)}
+  header h1{margin:.2rem 0}
+  header p{color:var(--muted);margin:.2rem 0}
+  .top-cta{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin:.75rem auto 1rem}
+  .btn{background:var(--accent);color:#0c1018;border:none;border-radius:999px;padding:.7rem 1rem;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#273043;color:var(--text)}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .chip{border:1px solid var(--border);background:#1a2030;color:var(--text);padding:.5rem .85rem;border-radius:999px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin:1.1rem 0}
+  .flex-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+  .box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
+  input[type="number"],input[type="text"],textarea{width:100%;padding:.6rem;border:1px solid var(--border);border-radius:10px;background:#0f131c;color:var(--text)}
+  .timer{font-size:1.4rem;margin:.25rem 0}
+  .progress{background:#1e2430;border:1px solid var(--border);height:10px;border-radius:999px;overflow:hidden}
+  .progress-bar{background:linear-gradient(90deg,var(--accent),var(--accent-2));height:100%;transition:width .2s}
+  .muted{color:var(--muted)}
+  .footer{border-top:1px solid var(--border);text-align:center;color:var(--muted);padding:1rem 0}
+  .tabs{display:flex;gap:.5rem;justify-content:center;margin:.5rem auto 0}
+  .tab{background:#1a2030;border:1px solid var(--border);color:var(--text);padding:.5rem .8rem;border-radius:999px;cursor:pointer}
+  .tab.active{border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+  .card{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-decoration:none;color:var(--text);transition:transform .12s ease,border .12s ease}
+  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .card .emoji{font-size:1.6rem;display:block;margin-bottom:.35rem}
+  .card small{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;background:#0f131c;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+  thead th{background:#101523;text-align:left;color:#cfd8e3}
+  tbody tr:hover{background:#121829}
+  .h-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+  .h-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
+  .h-card h3{margin:.2rem 0 .5rem 0}
+  .h-row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+  .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#1c2230;border:1px solid var(--border);font-size:.75rem;color:#c8d1dd}
+  .collapse-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:.6rem .8rem;border-radius:10px;border:1px solid var(--border);background:#0f131c}
+  .collapse-body{display:none;margin-top:.75rem}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem}
+  .modal{max-width:760px;width:100%;background:#0f131c;border:1px solid var(--border);border-radius:14px;padding:1rem}
+</style>
 </head>
 <body>
-  <header class="container">
-    <h1>🦴 Plataforma de Estudos — Ortopedia</h1>
-    <p>Versão v4 — base inteligente + gestão manual de módulos.</p>
-  </header>
+<header class="container">
+  <h1>📘 Plataforma de Estudos Inteligente</h1>
+  <p>Foco: estudo direcionado e preparação organizada para o TEOT.</p>
 
-  <main class="container">
+  <div class="top-cta">
+    <button id="generatePlan" class="btn">🪄 Gerar Atividade</button>
+    <span class="chip" id="chipGoal"></span>
+    <span class="chip" id="chipToday"></span>
+  </div>
 
-    <section class="panel">
-      <h2>🎯 Estudo Inteligente</h2>
-      <div class="flex-row">
-        <div class="box">
-          <h3>Meta diária</h3>
-          <form id="dailyGoalForm">
-            <label for="dailyGoal">Minutos de estudo:</label>
-            <input type="number" id="dailyGoal" min="5" step="5" placeholder="60" />
-            <button type="submit" class="btn">Salvar meta</button>
-          </form>
-          <div id="goalStatus" class="status"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="home">Início</button>
+    <button class="tab" data-tab="hierarquia">Hierarquia</button>
+  </div>
+</header>
+
+<main class="container">
+  <!-- ========== HOME ========== -->
+  <section class="panel" data-page="home">
+    <h2>🎯 Planejamento do Dia</h2>
+    <div class="flex-row">
+      <div class="box">
+        <h3>Meta diária</h3>
+        <form id="dailyGoalForm">
+          <label for="dailyGoal">Minutos de estudo:</label>
+          <input type="number" id="dailyGoal" min="5" step="5" placeholder="60" />
+          <button type="submit" class="btn" style="margin-top:.5rem">Salvar meta</button>
+        </form>
+        <div id="goalStatus" class="status muted" style="margin-top:.35rem"></div>
+      </div>
+      <div class="box">
+        <h3>📈 Progresso (do dia)</h3>
+        <div class="progress"><div id="progressBar" class="progress-bar" style="width:0%"></div></div>
+        <div id="progressText" class="muted">0 / 0 min</div>
+        <button id="addQuick15" class="btn" style="margin-top:.5rem">+15 min rápido</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-page="home">
+    <div class="collapse-head" data-collapse="timer">
+      <strong>⏱️ Cronômetro (opcional)</strong>
+      <span class="muted">clicar para mostrar/ocultar</span>
+    </div>
+    <div class="collapse-body" id="timerWrap">
+      <div class="box" style="margin-top:.75rem">
+        <div id="timerDisplay" class="timer">00:00:00</div>
+        <div class="btn-row">
+          <button id="startTimer" class="btn">Iniciar</button>
+          <button id="stopTimer" class="btn secondary">Parar</button>
+          <button id="resetTimer" class="btn ghost">Zerar</button>
         </div>
-        <div class="box">
-          <h3>⏱️ Cronômetro</h3>
-          <div id="timerDisplay" class="timer">00:00:00</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-page="home">
+    <h2>🗒️ Notas Rápidas</h2>
+    <textarea id="quickNotes" rows="5" placeholder="Digite suas anotações..."></textarea>
+    <div class="btn-row">
+      <button id="saveNotes" class="btn">Salvar</button>
+      <button id="clearNotes" class="btn secondary">Limpar</button>
+    </div>
+    <small class="muted">Tudo é salvo localmente neste dispositivo.</small>
+  </section>
+
+  <section class="panel" data-page="home">
+    <h2>📅 Hoje em Foco</h2>
+    <p class="muted">Resumo automático do seu dia de estudo.</p>
+    <table>
+      <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
+      <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- ========== HIERARQUIA ========== -->
+  <section class="panel" data-page="hierarquia" style="display:none">
+    <h2>🧭 Áreas & Subtemas</h2>
+    <div class="h-grid">
+      <div class="h-card">
+        <h3>Nova Área</h3>
+        <input type="text" id="areaName" placeholder="Ex.: Ombro, Trauma Infantil" />
+        <div class="h-row"><button class="btn" id="addArea">Criar Área</button></div>
+        <small class="muted">Crie a área e depois adicione subtemas dentro dela.</small>
+      </div>
+      <div class="h-card">
+        <h3>Resumo</h3>
+        <div><span class="badge" id="areasCount">0 áreas</span> • <span class="badge" id="subCount">0 subtemas</span></div>
+        <p class="muted" style="margin-top:.5rem;">A média dos subtemas define o progresso da área.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-page="hierarquia" style="display:none">
+    <h2>Minhas Áreas</h2>
+    <div id="areasList"></div>
+  </section>
+</main>
+
+<footer class="container footer">
+  <p>Estudos • Plataforma de Estudos Inteligente • © 2025</p>
+</footer>
+
+<script>
+  // ===== Navegação por abas =====
+  const tabs = document.querySelectorAll('.tab');
+  const pages = document.querySelectorAll('[data-page]');
+  function showTab(name){
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+    pages.forEach(p=>p.style.display = p.dataset.page===name ? '' : 'none');
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+  // ===== Estado e Storage =====
+  const SCOPE='estudos_v5';
+  const store={
+    get:(k,f)=>{try{return JSON.parse(localStorage.getItem(SCOPE+':'+k))??f}catch(e){return f}},
+    set:(k,v)=>{try{localStorage.setItem(SCOPE+':'+k,JSON.stringify(v))}catch(e){}}
+  };
+  const today=()=>new Date().toISOString().slice(0,10);
+  const state={
+    goal: store.get('goal',60),
+    logs: store.get('logs',{}),
+    notes: store.get('notes',''),
+    areas: store.get('areas',[]) // [{id,name,progress,children:[{id,name,notes,progress,log:{day:min}}]}]
+  };
+
+  // Chips topo
+  const chipGoal=document.getElementById('chipGoal');
+  const chipToday=document.getElementById('chipToday');
+  function updateChips(){
+    const d=today(); const tot=state.logs[d]||0; const g=Number(state.goal||0)||0;
+    chipGoal.textContent = 'Meta: ' + (g? g+' min':'defina sua meta');
+    chipToday.textContent = 'Hoje: ' + tot + ' min';
+  }
+
+  // ===== Painel Estudo Inteligente =====
+  const $ = s=>document.querySelector(s);
+  const goalInput=$('#dailyGoal'),goalStatus=$('#goalStatus'),pbar=$('#progressBar'),ptext=$('#progressText');
+
+  function renderProgress(){
+    const d=today(), tot=state.logs[d]||0, g=Number(state.goal||0)||0;
+    const pct = g>0? Math.min(100, Math.round(tot/g*100)) : 0;
+    if(pbar) pbar.style.width=pct+'%';
+    if(ptext) ptext.textContent = `${tot} / ${g} min`;
+    if(goalStatus) goalStatus.textContent = g? `Meta: ${g} min` : 'Defina uma meta';
+    if(goalInput) goalInput.value = g||'';
+    updateChips();
+  }
+  $('#dailyGoalForm')?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const val=Number(goalInput.value||0);
+    state.goal=val; store.set('goal',val); renderProgress();
+  });
+
+  // Cronômetro (opcional)
+  let tmr=null,start=null,acc=0; const disp=$('#timerDisplay');
+  function fmt(ms){const s=Math.floor(ms/1000),h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor(s%3600/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');return `${h}:${m}:${ss}`;}
+  function tick(){ if(disp){ const el=(start?Date.now()-start:0)+acc; disp.textContent=fmt(el);} }
+  $('#startTimer')?.addEventListener('click',()=>{ if(tmr) return; start=Date.now(); tmr=setInterval(tick,1000); });
+  $('#stopTimer')?.addEventListener('click',()=>{
+    if(!tmr) return; clearInterval(tmr); tmr=null;
+    const el=(start?Date.now()-start:0); acc+=el; start=null;
+    const add=Math.max(0, Math.round(acc/60000));
+    if(add){ const d=today(); state.logs[d]=(state.logs[d]||0)+add; store.set('logs',state.logs); acc=0; renderProgress(); renderLogTable(); }
+    tick();
+  });
+  $('#resetTimer')?.addEventListener('click',()=>{ if(tmr){clearInterval(tmr);tmr=null;} acc=0; start=null; tick(); });
+  $('#addQuick15')?.addEventListener('click',()=>{ const d=today(); state.logs[d]=(state.logs[d]||0)+15; store.set('logs',state.logs); renderProgress(); renderLogTable(); });
+
+  // Collapse do cronômetro
+  document.querySelector('[data-collapse="timer"]')?.addEventListener('click', ()=>{
+    const el=document.getElementById('timerWrap');
+    el.style.display = (el.style.display==='block') ? 'none' : 'block';
+  });
+
+  // Notas
+  const areaNotes=$('#quickNotes'); if(areaNotes) areaNotes.value=state.notes||'';
+  $('#saveNotes')?.addEventListener('click',()=>{ state.notes=areaNotes.value; store.set('notes',state.notes); });
+  $('#clearNotes')?.addEventListener('click',()=>{ areaNotes.value=''; state.notes=''; store.set('notes',''); });
+
+  // "Hoje em Foco"
+  function renderLogTable(){
+    const body=$('#logBody'); if(!body) return;
+    const entries=Object.entries(state.logs).sort((a,b)=>a[0]<b[0]?1:-1);
+    if(!entries.length){ body.innerHTML='<tr><td colspan="2">Nenhum registro ainda.</td></tr>'; return; }
+    body.innerHTML = entries.map(([date,min])=>`<tr><td>${date}</td><td>${min}</td></tr>`).join('');
+  }
+
+  // ===== Hierarquia (Áreas → Subtemas) =====
+  const areasList = $('#areasList');
+  function uid(prefix){ return prefix+'_'+Math.random().toString(36).slice(2,10); }
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }
+  function saveAreas(){ store.set('areas', state.areas); }
+  function countSubs(){ return state.areas.reduce((acc,a)=>acc+(a.children?.length||0),0); }
+  function recalcAreaProgress(area){
+    const list = area.children||[];
+    area.progress = list.length ? Math.round(list.reduce((acc,s)=>acc+(s.progress||0),0)/list.length) : 0;
+  }
+  function renderCounts(){
+    document.getElementById('areasCount').textContent = state.areas.length + (state.areas.length===1?' área':' áreas');
+    document.getElementById('subCount').textContent = countSubs() + (countSubs()===1?' subtema':' subtemas');
+  }
+  function renderAreas(){
+    if(!areasList) return;
+    if(!state.areas.length){ areasList.innerHTML='<p class="muted">Nenhuma área criada ainda.</p>'; renderCounts(); return; }
+    areasList.innerHTML = state.areas.map(ar=>{
+      const subs = (ar.children||[]).map(st=>`
+        <div class="box" style="display:flex;justify-content:space-between;align-items:center;margin:.5rem 0">
+          <div>
+            <strong>${escapeHtml(st.name)}</strong><br/>
+            <small class="muted">Progresso: ${Math.round(st.progress||0)}%</small>
+          </div>
           <div class="btn-row">
-            <button id="startTimer" class="btn">Iniciar</button>
-            <button id="stopTimer" class="btn secondary">Parar</button>
-            <button id="resetTimer" class="btn ghost">Zerar</button>
+            <button class="btn" data-act="open-sub" data-area="${ar.id}" data-id="${st.id}">Abrir</button>
+            <button class="btn secondary" data-act="del-sub" data-area="${ar.id}" data-id="${st.id}">Excluir</button>
           </div>
         </div>
-        <div class="box">
-          <h3>📈 Progresso</h3>
-          <div class="progress">
-            <div id="progressBar" class="progress-bar" style="width:0%"></div>
+      `).join('');
+      return `
+        <div class="h-card">
+          <h3>${escapeHtml(ar.name)} <span class="badge">${Math.round(ar.progress||0)}%</span></h3>
+          <div class="h-row">
+            <input type="text" placeholder="Novo subtema (ex.: Sd Manguito Rotador)" data-area-input="${ar.id}">
+            <button class="btn" data-act="add-sub" data-area="${ar.id}">Adicionar Subtema</button>
+            <button class="btn secondary" data-act="del-area" data-area="${ar.id}">Excluir Área</button>
           </div>
-          <div id="progressText" class="muted">0 / 0 min</div>
-          <button id="addQuick15" class="btn">+15 min rápido</button>
+          <div>${subs || '<p class="muted">Sem subtemas ainda.</p>'}</div>
         </div>
-      </div>
-    </section>
+      `;
+    }).join('');
+    // binds
+    Array.from(document.querySelectorAll('[data-act="add-sub"]')).forEach(b=>b.addEventListener('click', ()=>addSub(b.dataset.area)));
+    Array.from(document.querySelectorAll('[data-act="del-area"]')).forEach(b=>b.addEventListener('click', ()=>delArea(b.dataset.area)));
+    Array.from(document.querySelectorAll('[data-act="del-sub"]')).forEach(b=>b.addEventListener('click', ()=>delSub(b.dataset.area,b.dataset.id)));
+    Array.from(document.querySelectorAll('[data-act="open-sub"]')).forEach(b=>b.addEventListener('click', ()=>openSub(b.dataset.area,b.dataset.id)));
+    renderCounts();
+  }
+  document.getElementById('addArea')?.addEventListener('click', ()=>{
+    const name = (document.getElementById('areaName')?.value||'').trim();
+    if(!name) return alert('Informe o nome da área.');
+    state.areas.unshift({id:uid('a'), name, progress:0, children:[]});
+    document.getElementById('areaName').value='';
+    saveAreas(); renderAreas();
+  });
+  function delArea(areaId){
+    if(!confirm('Excluir esta área e todos os subtemas?')) return;
+    state.areas = state.areas.filter(a=>a.id!==areaId);
+    saveAreas(); renderAreas();
+  }
+  function addSub(areaId){
+    const ar = state.areas.find(a=>a.id===areaId); if(!ar) return;
+    const input = document.querySelector('[data-area-input="'+areaId+'"]');
+    const name = (input?.value||'').trim(); if(!name) return alert('Informe o nome do subtema.');
+    (ar.children ||= []).unshift({id:uid('s'), name, notes:'', progress:0, log:{}});
+    input.value=''; recalcAreaProgress(ar);
+    saveAreas(); renderAreas();
+  }
+  function delSub(areaId, subId){
+    const ar = state.areas.find(a=>a.id===areaId); if(!ar) return;
+    ar.children = (ar.children||[]).filter(s=>s.id!==subId);
+    recalcAreaProgress(ar); saveAreas(); renderAreas();
+  }
+  function openSub(areaId, subId){
+    const ar = state.areas.find(a=>a.id===areaId); if(!ar) return;
+    const st = (ar.children||[]).find(s=>s.id===subId); if(!st) return;
+    const wrap = document.createElement('div');
+    wrap.className='modal-backdrop';
+    wrap.innerHTML = `
+      <div class="modal">
+        <h2 style="margin-top:0">${escapeHtml(ar.name)} → ${escapeHtml(st.name)}</h2>
+        <label>Progresso (%):</label>
+        <input type="number" id="p_edit" min="0" max="100" value="${Math.round(st.progress||0)}" style="width:120px;margin:.25rem 0"/>
+        <label>Notas:</label>
+        <textarea id="n_edit" rows="8" placeholder="Anote conteúdo, Q&A, referências...">${(st.notes||'').replace(/</g,'&lt;')}</textarea>
+        <div class="btn-row" style="margin-top:.6rem">
+          <button id="saveSub" class="btn">Salvar</button>
+          <button id="exportSub" class="btn ghost">Exportar .txt</button>
+          <button id="closeSub" class="btn secondary">Fechar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#closeSub').onclick = ()=> wrap.remove();
+    wrap.querySelector('#saveSub').onclick = ()=>{
+      const p = Math.max(0, Math.min(100, Number(wrap.querySelector('#p_edit').value||0)));
+      const n = wrap.querySelector('#n_edit').value||'';
+      st.progress=p; st.notes=n; recalcAreaProgress(ar);
+      const day=today(); st.log[day] = (st.log[day]||0);
+      saveAreas(); renderAreas(); wrap.remove();
+    };
+    wrap.querySelector('#exportSub').onclick = ()=>{
+      const blob = new Blob([`# ${ar.name} → ${st.name}\n\nProgresso: ${Math.round(st.progress||0)}%\n\nNotas:\n${st.notes||''}`], {type:'text/plain'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `${ar.name} - ${st.name}.txt`; document.body.appendChild(a); a.click(); a.remove();
+    };
+  }
+  // Tornar acessível para o Gerar Atividade
+  window._openSub = openSub;
 
-    <section class="panel">
-      <h2>🗒️ Notas Rápidas</h2>
-      <textarea id="quickNotes" rows="5" placeholder="Digite suas anotações..."></textarea>
-      <div class="btn-row">
-        <button id="saveNotes" class="btn">Salvar</button>
-        <button id="clearNotes" class="btn secondary">Limpar</button>
-      </div>
-      <small class="muted">Tudo é salvo localmente neste dispositivo (sem servidor).</small>
-    </section>
+  // ===== Gerar Atividade =====
+  function minutesRemaining(){
+    const d=today(); const done=state.logs[d]||0; const g=Number(state.goal||0)||0;
+    return Math.max(0, g - done);
+  }
+  function flatSubs(){
+    const list=[];
+    state.areas.forEach(a=>{
+      (a.children||[]).forEach(s=>{
+        list.push({areaId:a.id, areaName:a.name, subId:s.id, subName:s.name, progress:Number(s.progress||0)});
+      });
+    });
+    return list.sort((x,y)=>x.progress - y.progress); // prioridade: menor progresso
+  }
+  function planBlocks(total){
+    const subs = flatSubs();
+    if(!subs.length){ return {blocks:[], note:'Crie áreas e subtemas na aba Hierarquia.'}; }
+    let rest = Math.max(0, total);
+    const blocks=[];
+    let i=0;
+    while(rest>0 && i<subs.length){
+      const slot = Math.min(rest, 25);
+      blocks.push({ ...subs[i], minutes: slot });
+      rest -= slot;
+      i++;
+    }
+    return {blocks, note: rest>0 ? 'Sobraram ' + rest + ' min.' : ''};
+  }
+  function showPlanModal(){
+    const wrap=document.createElement('div'); wrap.className='modal-backdrop';
+    const defaultTime = minutesRemaining() || 25;
+    const plan = planBlocks(defaultTime);
+    wrap.innerHTML = `
+      <div class="modal">
+        <h2 style="margin-top:0">🪄 Atividade do Dia</h2>
+        <p class="muted" style="margin:.25rem 0 .75rem">Plano gerado com base na sua meta, no que já fez hoje e no progresso por subtemas.</p>
+        <label>Quanto tempo você tem agora (min)?</label>
+        <input type="number" id="availMin" min="10" step="5" value="${defaultTime}" style="max-width:140px;margin:.35rem 0"/>
+        <div class="h-row" style="align-items:center">
+          <label style="display:flex;gap:.5rem;align-items:center">
+            <input type="checkbox" id="useTimer" />
+            <span>Iniciar com cronômetro</span>
+          </label>
+        </div>
+        <div id="planList" style="margin:.75rem 0">${renderBlocksList(plan.blocks)}</div>
+        <div class="btn-row">
+          <button id="regen" class="btn ghost">Regenerar</button>
+          <button id="startPlan" class="btn">Começar agora</button>
+          <button id="closePlan" class="btn secondary">Fechar</button>
+        </div>
+        <small class="muted">${plan.note || ''}</small>
+      </div>`;
+    document.body.appendChild(wrap);
 
-    <section class="panel">
-      <h2>📚 Módulos</h2>
-      <p class="muted">Crie e gerencie seus módulos manualmente.</p>
-      <div class="grid">
-        <a href="modules/index.html" class="card">
-          <span class="emoji">🩻</span>
-          <strong>Gerenciar Módulos</strong>
-          <small>Criar, editar, excluir — tudo local</small>
-        </a>
-      </div>
-    </section>
+    function renderBlocksList(blocks){
+      if(!blocks.length) return '<p class="muted">Nenhum subtema sugerido. Crie itens na aba Hierarquia.</p>';
+      return blocks.map((b,idx)=>`
+        <div class="box" style="display:flex;justify-content:space-between;align-items:center;margin:.4rem 0">
+          <div>
+            <strong>${escapeHtml(b.areaName)}</strong> → ${escapeHtml(b.subName)}<br/>
+            <small class="muted">Progresso atual: ${Math.round(b.progress)}%</small>
+          </div>
+          <div class="h-row" style="align-items:center">
+            <span class="badge">${b.minutes} min</span>
+            <label style="display:flex;gap:.35rem;align-items:center">
+              <input type="radio" name="chosen" value="${idx}" ${idx===0?'checked':''}/> foco
+            </label>
+          </div>
+        </div>
+      `).join('');
+    }
+    function buildPlan(){
+      const t = Math.max(10, Number(wrap.querySelector('#availMin').value||0));
+      const p = planBlocks(t);
+      wrap.querySelector('#planList').innerHTML = renderBlocksList(p.blocks);
+      return p;
+    }
+    document.getElementById('regen').onclick = ()=> buildPlan();
+    document.getElementById('closePlan').onclick = ()=> wrap.remove();
+    document.getElementById('startPlan').onclick = ()=>{
+      const radios = wrap.querySelectorAll('input[name="chosen"]');
+      let idx = 0; radios.forEach(r=>{ if(r.checked) idx = Number(r.value) });
+      const t = Math.max(10, Number(wrap.querySelector('#availMin').value||0));
+      const p = planBlocks(t);
+      const chosen = p.blocks[idx];
+      if(!chosen){ alert('Crie áreas e subtemas primeiro.'); return; }
+      // Abrir subtema
+      showTab('hierarquia');
+      setTimeout(()=> window._openSub(chosen.areaId, chosen.subId), 50);
+      // Cronômetro opcional
+      if(document.getElementById('useTimer').checked){
+        showTab('home');
+        const timerWrap=document.getElementById('timerWrap');
+        timerWrap.style.display='block';
+        setTimeout(()=> document.getElementById('startTimer')?.click(), 100);
+      }
+      wrap.remove();
+    };
+  }
+  document.getElementById('generatePlan')?.addEventListener('click', showPlanModal);
 
-    <section class="panel">
-      <h2>📅 Log de Estudo</h2>
-      <p class="muted">Registro automático de minutos estudados por dia.</p>
-      <table id="logTable" class="log-table">
-        <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
-        <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
-      </table>
-    </section>
-
-  </main>
-
-  <footer class="container footer">
-    <p>Projeto Estudos — Ortopedia • v4 © 2025</p>
-  </footer>
-
-  <script src="script.js"></script>
+  // ===== Inicialização =====
+  function renderLogTable(){
+    const body=document.getElementById('logBody'); if(!body) return;
+    const entries=Object.entries(state.logs).sort((a,b)=>a[0]<b[0]?1:-1);
+    if(!entries.length){ body.innerHTML='<tr><td colspan="2">Nenhum registro ainda.</td></tr>'; return; }
+    body.innerHTML = entries.map(([date,min])=>`<tr><td>${date}</td><td>${min}</td></tr>`).join('');
+  }
+  function init(){ showTab('home'); renderProgress(); renderLogTable(); renderAreas(); }
+  init();
+</script>
 </body>
 </html>
