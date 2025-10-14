@@ -1,18 +1,16 @@
-# Plataforma de Estudos — Base Inteligente (Ortopedia)
+# Plataforma de Estudos — Ortopedia (v3)
 
-Versão **zerada e funcional** da plataforma — estrutura completa, sem temas ou módulos pré-criados.
+Base inteligente + módulos + log diário + prompt do Claude.
+Sem dependências externas. Pensado para zero-bug e uso em iPhone/Mac/Android.
 
-## Estrutura
-- `index.html`: Página inicial com painel de estudo inteligente.
-- `style.css`: Tema dark minimalista.
-- `script.js`: Cronômetro, metas e notas (localStorage).
-- `/modules/`: Pasta vazia com um placeholder.
-- `/assets/`: Pastas preparadas para ícones e imagens.
+## Como publicar (repositório já existe)
+1. Abra seu repo no GitHub.
+2. **Upload** de todo o conteúdo deste pacote (o que está *dentro* do zip).
+3. **Commit changes**.
+4. Acesse: `https://<usuario>.github.io/Estudos/?v=3`
 
-## Atualização no GitHub
-1. Vá ao seu repositório existente `Estudos`.
-2. **SUBSTITUA** `index.html`, `style.css` e `script.js` pelos deste pacote.
-3. **ADICIONE** as pastas `modules/` e `assets/` (com os arquivos inclusos).
-4. Commit → Aguarde ~1 minuto → Atualize `https://<seu-usuario>.github.io/Estudos`.
-
-Tudo roda localmente, sem dependências externas. Seguro, leve e pronto para expansão.
+## O que há de novo
+- Área **Módulos** (link para `modules/index.html`).
+- **Log de estudo** automático (tabela por dia).
+- `script.js` robusto com `localStorage` e try/catch.
+- `claude_prompt.md` com instruções para refinamento UX/visual.
