@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Demo automática — Plataforma de Estudos Inteligente</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#0f1115;color:#e6e6e6}
+  .wrap{max-width:920px;margin:0 auto;padding:1rem}
+  .panel{border:1px solid #2a2f3a;background:#141821;border-radius:12px;padding:1rem;margin:1rem 0}
+  .btn{background:#4da3ff;color:#0c1018;border:none;border-radius:999px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
+  .muted{color:#9aa4af}
+  code{background:#101523;padding:.15rem .35rem;border-radius:6px}
+  ol{line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎥 Demo automática</h1>
+  <p class="muted">Esta página controla a plataforma em outra aba para gerar uma demonstração de ~45–60s. Você pode gravar a própria aba com 1 clique.</p>
+
+  <div class="panel">
+    <h3>Como usar</h3>
+    <ol>
+      <li>Abra a plataforma em outra aba: <code>/Estudos/</code> (sua página publicada).</li>
+      <li>Volte aqui e clique em <strong>Iniciar demonstração</strong>.</li>
+      <li>(Opcional) Clique em <strong>Gravar vídeo (beta)</strong> para capturar a aba da plataforma (o navegador pedirá permissão).</li>
+    </ol>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+      <button id="startDemo" class="btn">Iniciar demonstração</button>
+      <button id="recordDemo" class="btn">Gravar vídeo (beta)</button>
+    </div>
+    <p id="status" class="muted" style="margin-top:.5rem"></p>
+  </div>
+
+  <div class="panel">
+    <h3>O que a demo faz</h3>
+    <ul>
+      <li>Define meta de 60 min, adiciona +15 min e mostra “Hoje em Foco”.</li>
+      <li>Abre a aba Hierarquia, cria uma Área e um Subtema de exemplo e abre o modal.</li>
+      <li>Mostra o botão “🪄 Gerar Atividade” e inicia um plano com 25 min (sem cronômetro).</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  // Controla a aba da plataforma pelo título e posts de navegação (guia manual simples)
+  let platformTab = null;
+
+  function openPlatformTab(){
+    // Tenta focar uma aba já aberta com título conhecido — fallback: abre raiz
+    platformTab = window.open('./', '_blank');
+  }
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  async function runDemo(){
+    document.getElementById('status').textContent = 'Abrindo plataforma...';
+    openPlatformTab();
+    await sleep(1500);
+
+    try{
+      // Passo 1: set meta e +15 min (interage por localStorage)
+      const scope='estudos_v5';
+      platformTab.localStorage.setItem(scope+':goal','60');
+      const logs = JSON.parse(platformTab.localStorage.getItem(scope+':logs')||'{}');
+      const d = new Date().toISOString().slice(0,10);
+      logs[d] = (logs[d]||0) + 15;
+      platformTab.localStorage.setItem(scope+':logs', JSON.stringify(logs));
+      platformTab.location.reload();
+      document.getElementById('status').textContent = 'Meta definida e +15 min adicionados.';
+
+      await sleep(1500);
+
+      // Passo 2: Hierarquia — cria área e subtema
+      const areas = JSON.parse(platformTab.localStorage.getItem(scope+':areas')||'[]');
+      if(!areas.length){
+        areas.unshift({id:'a_demo', name:'Ombro (demo)', progress:0, children:[
+          {id:'s_demo', name:'Sd Manguito (demo)', notes:'', progress:20, log:{}}
+        ]});
+        platformTab.localStorage.setItem(scope+':areas', JSON.stringify(areas));
+      }
+      platformTab.location.reload();
+      document.getElementById('status').textContent = 'Área/Subtema de demonstração criados.';
+
+      await sleep(1500);
+
+      // Passo 3: abrir modal do subtema automaticamente (simulação)
+      // Não há API cross-window confiável para chamar funções internas, então instruímos o usuário:
+      alert('Na aba da plataforma: clique em "Hierarquia" → "Abrir" no subtema "Sd Manguito (demo)". (Para o vídeo, deixe a ação visível por ~2s.)');
+
+      await sleep(2500);
+
+      // Passo 4: Gerar Atividade
+      alert('Agora, na aba da plataforma: clique em "🪄 Gerar Atividade", mantenha 25 min, e clique em "Começar agora".');
+      document.getElementById('status').textContent = 'Demonstração concluída.';
+    }catch(e){
+      document.getElementById('status').textContent = 'Falha ao automatizar: '+e.message;
+    }
+  }
+
+  document.getElementById('startDemo').addEventListener('click', runDemo);
+
+  // Gravação da aba (permite escolher a aba da plataforma)
+  document.getElementById('recordDemo').addEventListener('click', async ()=>{
+    try{
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
+      const chunks=[];
+      const rec = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+      rec.ondataavailable = e=> chunks.push(e.data);
+      rec.onstop = ()=>{
+        const blob = new Blob(chunks, {type:'video/webm'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'demo-plataforma.webm';
+        a.click();
+      };
+      rec.start();
+      alert('Gravando... quando terminar, pare a captura no seletor do navegador. O arquivo .webm será baixado automaticamente.');
+      // o usuário encerra a captura pelo UI do navegador
+      stream.getVideoTracks()[0].addEventListener('ended', ()=> rec.stop());
+    }catch(e){
+      alert('Não foi possível iniciar a gravação: '+e.message);
+    }
+  });
+</script>
+</body>
+</html>
