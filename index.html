@@ -1,551 +1,239 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V Estudos — Cronograma Inteligente</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-512.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#0f0f0f">
-<style>
-  :root{--bg1:#0f0f0f;--bg2:#1f1f1f;--card:rgba(28,28,28,.86);--border:#2f2f2f;--muted:#b9c0c7;--accent:#6ea8fe;--ok:#4cd37b;--warn:#f6c453;--danger:#ff6b6b;}
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#f2f5f9;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  header{position:sticky;top:0;z-index:5;background:rgba(15,15,15,.9);backdrop-filter:blur(6px);border-bottom:1px solid var(--border);padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
-  h1{margin:0;font-size:18px}
-  .muted{color:var(--muted);font-size:13px}
-  .container{max-width:1000px;margin:14px auto;padding:0 12px}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-  .tab{padding:8px 12px;border:1px solid var(--border);background:#1a1a1a;border-radius:999px;cursor:pointer}
-  .tab.active{background:var(--accent);color:#0b1220;border-color:#4f86e6}
-  .grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-  label{font-size:13px;color:var(--muted)}
-  input,select,textarea,button{width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid var(--border);background:#171717;color:#f2f5f9}
-  textarea{resize:vertical}
-  button{cursor:pointer}
-  button.primary{background:var(--accent);color:#0b1220;border-color:#4f86e6;font-weight:600}
-  button.small{width:auto;padding:6px 10px;font-size:13px}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  table{width:100%;border-collapse:collapse}
-  th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left}
-  .pill{padding:6px 10px;border-radius:999px;background:#1f1f1f;border:1px solid var(--border);font-size:12px}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)}
-  .section-title{margin:4px 0 8px}
-  .right{display:flex;gap:8px;align-items:center}
-  .hint{font-size:12px;color:var(--muted);margin-top:6px}
-  .divider{border:none;border-top:1px solid var(--border);margin:10px 0}
-  canvas{max-width:100%;height:auto}
-</style>
-</head>
-<body>
-<header>
-  <div>
-    <h1>V Estudos — Cronograma Inteligente</h1>
-    <div class="muted">PWA offline • cronograma por disponibilidade • revisão espaçada • sugestões</div>
-  </div>
-  <div class="right">
-    <button id="btnRefresh" class="primary small">🔄 Atualizar app</button>
-  </div>
-</header>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V Estudos — Cronograma Inteligente</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f0f0f">
 
-<div class="container">
-  <div class="tabs">
-    <button class="tab active" data-tab="hoje">📅 Hoje</button>
-    <button class="tab" data-tab="semana">🗓️ Semana</button>
-    <button class="tab" data-tab="temas">📚 Temas</button>
-    <button class="tab" data-tab="stats">📈 Estatísticas</button>
-    <button class="tab" data-tab="feedback">💬 Feedback</button>
-    <button class="tab" data-tab="config">⚙️ Configurações</button>
-  </div>
-
-  <section id="tab-hoje" class="grid">
-    <main>
-      <div class="card">
-        <h3 class="section-title">Plano do dia</h3>
-        <div class="row">
-          <div style="flex:1">
-            <label>Data da prova</label>
-            <input type="date" id="examDate">
-          </div>
-          <div style="width:160px">
-            <label>Temas por dia</label>
-            <input type="number" id="perDay" min="1" max="10" value="2">
-          </div>
-          <div style="width:180px">
-            <label>Modo sugerido</label>
-            <select id="modoSugerido">
-              <option value="auto" selected>Automático</option>
-              <option value="teoria">Estudo teórico</option>
-              <option value="passiva">Revisão passiva</option>
-              <option value="ativa">Revisão ativa</option>
-              <option value="misto">Estudo + revisão</option>
-            </select>
-          </div>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button id="btnGenerateToday" class="primary small">Gerar plano de hoje</button>
-          <button id="btnClearToday" class="small">Limpar seleção de hoje</button>
-        </div>
-        <div id="summaryToday" class="row" style="margin-top:8px"></div>
-        <hr class="divider">
-        <div id="todayList"></div>
-        <div class="hint" id="todayHints"></div>
-      </div>
-    </main>
-    <aside>
-      <div class="card">
-        <h3 class="section-title">Sugestões do sistema</h3>
-        <div id="sugestoesHoje" class="hint">Gere o plano para ver sugestões…</div>
-      </div>
-      <div class="card" style="margin-top:12px">
-        <h3 class="section-title">Progresso</h3>
-        <div id="progressPills" class="row"></div>
-      </div>
-    </aside>
-  </section>
-
-  <section id="tab-semana" class="grid" style="display:none">
-    <main>
-      <div class="card">
-        <h3 class="section-title">Cronograma da semana (gerado pela disponibilidade)</h3>
-        <div id="semanaPlano"></div>
-      </div>
-    </main>
-    <aside>
-      <div class="card">
-        <h3 class="section-title">Disponibilidade semanal</h3>
-        <div id="dispForm"></div>
-        <div class="row" style="margin-top:8px">
-          <button id="btnSaveDisp" class="primary small">Salvar disponibilidade</button>
-          <button id="btnGerarSemana" class="small">Gerar cronograma semanal</button>
-        </div>
-        <div class="hint">Ex.: Seg 2h, Qua 4h, Sáb 0h (livre).</div>
-      </div>
-    </aside>
-  </section>
-
-  <section id="tab-temas" style="display:none">
-    <div class="grid">
-      <main>
-        <div class="card">
-          <h3 class="section-title">Lista de temas</h3>
-          <div class="row" style="justify-content:space-between">
-            <div class="muted">Clique em ✅ para marcar como feito hoje.</div>
-            <div class="row">
-              <button id="btnExport" class="small">Exportar JSON</button>
-              <button id="btnImport" class="small">Importar JSON</button>
-              <input id="fileInput" type="file" accept=".json" style="display:none"/>
-            </div>
-          </div>
-          <table>
-            <thead><tr>
-              <th>Tema</th><th>Prioridade</th><th>Dificuldade</th><th>Status</th>
-              <th>Acertos/Erros</th><th>Último estudo</th><th>Próx. revisão</th><th>Ações</th>
-            </tr></thead>
-            <tbody id="themesTable"></tbody>
-          </table>
-        </div>
-      </main>
-      <aside>
-        <div class="card">
-          <h3 class="section-title">Adicionar tema</h3>
-          <label>Tema</label><input id="tema" placeholder="Ex: Fasceíte plantar">
-          <label>Prioridade</label>
-          <select id="prioridade"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select>
-          <label>Dificuldade</label>
-          <select id="dificuldade"><option>alta</option><option selected>média</option><option>baixa</option></select>
-          <label>Comentário</label><textarea id="comentario" rows="3" placeholder="Observações iniciais..."></textarea>
-          <div class="row" style="margin-top:8px"><button id="btnAdd" class="primary">Adicionar tema</button></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="tab-stats" style="display:none">
-    <div class="grid">
-      <main>
-        <div class="card">
-          <h3 class="section-title">Estatísticas</h3>
-          <div id="statsSummary" class="row" style="margin-bottom:8px"></div>
-          <canvas id="accDonut" width="360" height="220"></canvas>
-          <hr class="divider">
-          <canvas id="dailyBars" width="520" height="220"></canvas>
-        </div>
-      </main>
-      <aside>
-        <div class="card">
-          <h3 class="section-title">Observações do sistema</h3>
-          <div id="statsNotes" class="hint"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="tab-feedback" style="display:none">
-    <div class="grid">
-      <main>
-        <div class="card">
-          <h3 class="section-title">Envie seu feedback</h3>
-        <label>Como podemos melhorar?</label>
-        <textarea id="fbTexto" rows="4" placeholder="Diga sua sugestão, dificuldade ou ideia…"></textarea>
-        <div class="row" style="margin-top:8px">
-          <button id="btnSendFB" class="primary small">Enviar</button>
-        </div>
-        </div>
-      </main>
-      <aside>
-        <div class="card">
-          <h3 class="section-title">Relatório de insights</h3>
-          <div id="fbReport" class="hint">Sem feedbacks ainda…</div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="tab-config" style="display:none">
-    <div class="grid">
-      <main>
-        <div class="card">
-          <h3 class="section-title">Preferências & Segurança</h3>
-          <div class="row">
-            <button id="btnReset" class="small">Resetar tudo (local)</button>
-            <button id="btnBackup" class="small">Backup (JSON)</button>
-            <button id="btnRestore" class="small">Restaurar (JSON)</button>
-            <input id="backupInput" type="file" accept=".json" style="display:none"/>
-          </div>
-          <div class="hint">Os dados ficam somente no seu dispositivo (localStorage).</div>
-        </div>
-      </main>
-      <aside>
-        <div class="card">
-          <h3 class="section-title">Sobre</h3>
-          <div class="hint">A plataforma aprende com seu uso e ajusta o plano automaticamente.</div>
-        </div>
-      </aside>
-    </div>
-  </section>
-</div>
-
-<script>
-document.getElementById('btnRefresh').addEventListener('click', async () => {
-  const b = document.getElementById('btnRefresh');
-  b.innerText = '⏳ Atualizando…'; b.disabled = true;
-  try{
-    if('caches' in window){ const ks = await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
-    if('serviceWorker' in navigator){ const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister())); }
-  }catch(e){}
-  setTimeout(()=>location.reload(true), 400);
-});
-
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    const id=t.dataset.tab;
-    ['hoje','semana','temas','stats','feedback','config'].forEach(k=>{
-      document.getElementById('tab-'+k).style.display=(k===id)?'':'none';
-    });
-    if(id==='stats'){ renderStats(); }
-  });
-});
-
-const LSK='cronograma_estudos_v3f2';
-const LSKS='cronograma_settings_v3f2';
-const LSKW='cronograma_week_v3f2';
-const LSKF='cronograma_feedback_v3f2';
-let temas=[], disponibilidade={}, semanaPlano=[], feedbacks=[];
-
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-function iso(d=new Date()){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return y+'-'+m+'-'+da}
-function daysBetween(a,b){const A=new Date(a),B=new Date(b);A.setHours(0,0,0,0);B.setHours(0,0,0,0);return Math.round((B-A)/86400000)}
-function addDays(s, n){const d=new Date(s);d.setDate(d.getDate()+n);return iso(d)}
-
-function saveAll(){
-  localStorage.setItem(LSK, JSON.stringify(temas));
-  localStorage.setItem(LSKS, JSON.stringify({
-    examDate: examDate.value||'',
-    perDay: parseInt(perDay.value)||2,
-    modoSugerido: modoSugerido.value
-  }));
-  localStorage.setItem(LSKW, JSON.stringify({disponibilidade, semanaPlano}));
-  localStorage.setItem(LSKF, JSON.stringify(feedbacks));
-}
-function loadAll(){
-  try{temas = JSON.parse(localStorage.getItem(LSK)||'[]')}catch(e){}
-  try{const s = JSON.parse(localStorage.getItem(LSKS)||'{}'); if(s.examDate) examDate.value=s.examDate; if(s.perDay) perDay.value=s.perDay; if(s.modoSugerido) modoSugerido.value=s.modoSugerido;}catch(e){}
-  try{const w = JSON.parse(localStorage.getItem(LSKW)||'{}'); disponibilidade=w.disponibilidade||{}; semanaPlano=w.semanaPlano||[];}catch(e){}
-  try{feedbacks = JSON.parse(localStorage.getItem(LSKF)||'[]')}catch(e){}
-}
-
-const dias = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-function renderDispForm(){
-  const box=document.getElementById('dispForm'); box.innerHTML='';
-  dias.forEach(d=>{
-    const val = disponibilidade[d] ?? 0;
-    const row=document.createElement('div'); row.className='row';
-    row.innerHTML = `<div style="width:60px"><label>${d}</label></div>
-      <input type="number" min="0" step="0.5" value="${val}" id="h_${d}" style="flex:1"> <div class="muted">horas</div>`;
-    box.appendChild(row);
-  });
-}
-function readDisp(){ const obj={}; dias.forEach(d=>{ const el=document.getElementById('h_'+d); obj[d]=Number(el?.value||0); }); disponibilidade=obj; saveAll(); }
-
-function renderProgress(){
-  const total=temas.length, done=temas.filter(t=>t.status==='concluido').length, pend=total-done;
-  document.getElementById('progressPills').innerHTML =
-    `<div class="pill">Total: ${total}</div>
-     <div class="pill ok">Concluídos: ${done}</div>
-     <div class="pill">Pendentes: ${pend}</div>`;
-}
-function renderSummaryToday(){
-  const left = examDate.value ? daysBetween(iso(new Date()), examDate.value) : null;
-  const t = temas.length, d = temas.filter(x=>x.status==='concluido').length;
-  const pct = t? Math.round(100*d/t):0;
-  const pillLeft = left===null? '-' : left;
-  document.getElementById('summaryToday').innerHTML =
-   `<div class="pill">Temas: ${t}</div>
-    <div class="pill ok">Concluídos: ${d}</div>
-    <div class="pill">Progresso: ${pct}%</div>
-    <div class="pill ${left!==null?(left<=7?'danger':left<=30?'warn':''):''}">Dias até a prova: ${pillLeft}</div>`;
-}
-
-function needScore(t){
-  const base = (t.prioridade||3)*3;
-  const diff = (t.dificuldade==='alta'?1:(t.dificuldade==='média'?0.5:0));
-  const erros = (t.erros||0), ac = (t.acertos||0);
-  const errFactor = Math.min(3, 1 + (erros - ac)/10);
-  const last = t.dataEstudo ? Math.max(1, daysBetween(t.dataEstudo, iso(new Date()))) : 7;
-  const spacedBoost = t.proximaRevisao && daysBetween(iso(new Date()), t.proximaRevisao) <= 0 ? 3 : 0;
-  return base + diff + errFactor + Math.log2(last+1) + spacedBoost;
-}
-
-const intervals=[1,3,7,15,30];
-function scheduleNextReview(t){
-  const today=iso(new Date());
-  t.ciclo = (t.ciclo||0);
-  const idx = Math.min(intervals.length-1, t.ciclo);
-  t.proximaRevisao = addDays(today, intervals[idx]);
-}
-
-function renderTemas(){
-  const tt=document.getElementById('themesTable'); tt.innerHTML='';
-  const arr=[...temas].sort((a,b)=>needScore(b)-needScore(a));
-  arr.forEach(t=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `
-      <td>${t.tema}</td>
-      <td>${t.prioridade||'-'}</td>
-      <td>${t.dificuldade||'-'}</td>
-      <td>${t.status||'pendente'}</td>
-      <td>${(t.acertos||0)}/${(t.erros||0)}</td>
-      <td>${t.dataEstudo||'-'}</td>
-      <td>${t.proximaRevisao||'-'}</td>
-      <td>
-        <button class="small" onclick="editAcc('${t.id}')">Acertos/Erros</button>
-        <button class="small" onclick="finishTema('${t.id}', true)">Concluir</button>
-        <button class="small" onclick="delTema('${t.id}')">Apagar</button>
-      </td>`;
-    tt.appendChild(tr);
-  });
-}
-function addTema(){
-  const tema=document.getElementById('tema').value.trim();
-  const prioridade=parseInt(document.getElementById('prioridade').value);
-  const dificuldade=document.getElementById('dificuldade').value;
-  const comentario=(document.getElementById('comentario').value||'').trim();
-  if(!tema) return alert('Digite o tema');
-  temas.push({id:uid(), tema, prioridade, dificuldade, comentario, status:'pendente', acertos:0, erros:0, dataEstudo:'', ciclo:0, proximaRevisao:''});
-  document.getElementById('tema').value=''; document.getElementById('comentario').value='';
-  saveAll(); renderTemas();
-}
-function delTema(id){ if(!confirm('Apagar este tema?')) return; temas=temas.filter(t=>t.id!==id); saveAll(); renderTemas(); renderProgress(); }
-function editAcc(id){
-  const t=temas.find(x=>x.id===id); if(!t) return;
-  const a=prompt('Número de acertos', t.acertos||0);
-  const e=prompt('Número de erros', t.erros||0);
-  const A=parseInt(a), E=parseInt(e);
-  if(!isNaN(A)) t.acertos=A; if(!isNaN(E)) t.erros=E;
-  if(t.acertos<0)t.acertos=0; if(t.erros<0)t.erros=0;
-  saveAll(); renderTemas();
-}
-function finishTema(id){
-  const t=temas.find(x=>x.id===id); if(!t) return;
-  t.status='concluido'; t.dataEstudo=iso(new Date());
-  t.ciclo = (t.ciclo||0)+1; scheduleNextReview(t);
-  if((t.erros||0) > (t.acertos||0) && t.ciclo>1) t.ciclo = t.ciclo-1;
-  saveAll(); renderTemas(); renderProgress();
-}
-
-function gerarHoje(){
-  renderSummaryToday();
-  const n=parseInt(perDay.value)||2;
-  const pend=temas.filter(t=>t.status!=='concluido').sort((a,b)=>needScore(b)-needScore(a));
-  const chosen=pend.slice(0,n);
-  const box=document.getElementById('todayList'); box.innerHTML='';
-  const sug=[];
-  if(chosen.length===0){ box.innerHTML='<div class="muted">Nenhum tema selecionado.</div>'; document.getElementById('sugestoesHoje').innerHTML='—'; return;}
-  const ul=document.createElement('ul'); ul.style.paddingLeft='18px';
-  chosen.forEach(t=>{
-    let tip='misto';
-    const modo=modoSugerido.value;
-    if(modo==='auto'){
-      if(t.proximaRevisao && daysBetween(iso(new Date()), t.proximaRevisao)<=0) tip='ativa';
-      else if((t.erros||0)>(t.acertos||0)) tip='ativa';
-      else tip='passiva';
-    } else tip=modo;
-    t._sugestao=tip;
-    if(tip==='ativa') sug.push(`Refaça 10–20 questões de <b>${t.tema}</b>.`);
-    if(tip==='passiva') sug.push(`Revise anotações/guia rápido de <b>${t.tema}</b>.`);
-    if(tip==='teoria') sug.push(`Estude a aula/teoria de <b>${t.tema}</b>.`);
-    if(tip==='misto') sug.push(`Estudo + revisão breve de <b>${t.tema}</b>.`);
-    const li=document.createElement('li'); li.style.margin='8px 0';
-    li.innerHTML = `<strong>${t.tema}</strong> — prioridade ${t.prioridade||'-'} <span class="muted">(${t.dificuldade||'-'})</span>
-    <div class="row" style="margin-top:6px">
-      <button class="small primary" onclick="finishTema('${t.id}', true)">Marcar concluído hoje</button>
-      <button class="small" onclick="editAcc('${t.id}')">Acertos/Erros</button>
-    </div>
-    <div class="hint">Sugestão: ${t._sugestao||'misto'}</div>`;
-    ul.appendChild(li);
-  });
-  box.appendChild(ul);
-  document.getElementById('sugestoesHoje').innerHTML = sug.slice(0,4).map(s=>`• ${s}`).join('<br>');
-}
-
-function gerarSemana(){
-  semanaPlano=[];
-  const pend=temas.filter(t=>t.status!=='concluido').sort((a,b)=>needScore(b)-needScore(a));
-  const queue=[...pend];
-  dias.forEach(d=>{
-    const horas=Number(disponibilidade[d]||0);
-    const blocos=[];
-    for(let h=0; h<horas; h++){
-      const t=queue.shift(); if(!t) break;
-      blocos.push({temaId:t.id, tema:t.tema, modo:(t._sugestao||'auto')});
-      queue.push(t);
+  <style>
+    :root {
+      --grafite1: #0f0f0f;
+      --grafite2: #1f1f1f;
+      --azul: #6ea8fe;
+      --texto: #e8eef6;
+      --muted: #a0a8b5;
+      --borda: #2b2b2b;
+      --ok: #4cd37b;
+      --erro: #ff6b6b;
     }
-    semanaPlano.push({dia:d,blocos});
-  });
-  saveAll(); renderSemana();
-}
-function renderSemana(){
-  const box=document.getElementById('semanaPlano'); box.innerHTML='';
-  if(!semanaPlano.length){ box.innerHTML='<div class="muted">Preencha sua disponibilidade e gere o cronograma semanal.</div>'; return;}
-  const tbl=document.createElement('table'); tbl.innerHTML='<thead><tr><th>Dia</th><th>Blocos</th></tr></thead>';
-  const tb=document.createElement('tbody');
-  semanaPlano.forEach(dia=>{
-    const tr=document.createElement('tr');
-    const blocos = dia.blocos.map(b=>`<div class="pill" style="display:inline-block;margin:2px 4px 2px 0">${b.tema}</div>`).join('');
-    tr.innerHTML=`<td><strong>${dia.dia}</strong></td><td>${blocos||'<span class="muted">Sem blocos</span>'}</td>`;
-    tb.appendChild(tr);
-  });
-  tbl.appendChild(tb); box.appendChild(tbl);
-}
 
-function drawDonut(canvasId, ok, err){
-  const c=document.getElementById(canvasId); if(!c) return;
-  const ctx=c.getContext('2d'); const w=c.width, h=c.height; ctx.clearRect(0,0,w,h);
-  const total=Math.max(1, ok+err);
-  const cx=w/2, cy=h/2, r=Math.min(w,h)*0.37, thickness=r*0.46;
-  ctx.lineWidth=thickness; ctx.strokeStyle='#2b2b2b'; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
-  const angOk = (ok/total)*Math.PI*2;
-  ctx.strokeStyle='#4cd37b'; ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2, -Math.PI/2+angOk); ctx.stroke();
-  ctx.strokeStyle='#ff6b6b'; ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2+angOk, -Math.PI/2+angOk + (err/total)*Math.PI*2); ctx.stroke();
-  const pct = Math.round((ok/total)*100);
-  ctx.fillStyle='#e8eef6'; ctx.font='bold 28px system-ui,-apple-system,Segoe UI,Roboto'; ctx.textAlign='center'; ctx.fillText(pct+'%', cx, cy+10);
-  ctx.fillStyle='#9aa4b2'; ctx.font='12px system-ui,-apple-system,Segoe UI,Roboto'; ctx.fillText(`Acertos: ${ok}  •  Erros: ${err}`, cx, cy+32);
-}
-function drawBars(canvasId, dataObj){
-  const c=document.getElementById(canvasId); if(!c) return;
-  const ctx=c.getContext('2d'); const w=c.width, h=c.height; ctx.clearRect(0,0,w,h);
-  const keys=Object.keys(dataObj).sort(); if(keys.length===0){ ctx.fillStyle='#9aa4b2'; ctx.fillText('Sem dados suficientes.', 20, 30); return; }
-  const maxVal=Math.max(...keys.map(k=>dataObj[k]),1);
-  const padL=40, padR=10, padT=20, padB=26;
-  const chartW=w-padL-padR, chartH=h-padT-padB;
-  const bw=Math.max(6, chartW/keys.length-8);
-  ctx.fillStyle='#9aa4b2'; ctx.font='12px system-ui'; ctx.textAlign='left'; ctx.fillText('Concluídos por dia', padL, 14);
-  keys.forEach((k,i)=>{
-    const x=padL+i*(bw+8);
-    const val=dataObj[k];
-    const bh=(val/maxVal)*chartH;
-    const y=padT+(chartH-bh);
-    ctx.fillStyle='#6ea8fe'; ctx.fillRect(x,y,bw,bh);
-    ctx.fillStyle='#9aa4b2'; ctx.textAlign='center'; ctx.fillText(k.slice(5), x+bw/2, h-8);
-  });
-}
-function renderStats(){
-  const ok=temas.reduce((s,t)=>s+(t.acertos||0),0);
-  const er=temas.reduce((s,t)=>s+(t.erros||0),0);
-  drawDonut('accDonut', ok, er);
-  const daily={}; temas.forEach(t=>{ if(t.dataEstudo){ daily[t.dataEstudo]=(daily[t.dataEstudo]||0)+1; } });
-  drawBars('dailyBars', daily);
-  const total=temas.length, concl=temas.filter(t=>t.status==='concluido').length;
-  const pct=(ok+er)>0?Math.round(100*ok/(ok+er)):0;
-  document.getElementById('statsSummary').innerHTML =
-    `<div class="pill">Temas: ${total}</div><div class="pill ok">Concluídos: ${concl}</div><div class="pill">Precisão: ${pct}%</div>`;
-  document.getElementById('statsNotes').innerHTML = (pct<70)?'Sugestão: priorize revisão ativa dos 3 temas com menor acurácia.':'Ótimo ritmo! Mantenha ~60% teoria, 40% revisão ativa.';
-}
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: linear-gradient(135deg, var(--grafite1), var(--grafite2));
+      color: var(--texto);
+      overflow-x: hidden;
+    }
 
-function sendFeedback(){
-  const txt=(document.getElementById('fbTexto').value||'').trim();
-  if(!txt) return alert('Escreva seu feedback.');
-  feedbacks.push({id:uid(), data: iso(new Date()), texto: txt});
-  document.getElementById('fbTexto').value='';
-  saveAll(); renderFBReport();
-}
-function renderFBReport(){
-  if(!feedbacks.length){ document.getElementById('fbReport').innerHTML='Sem feedbacks ainda…'; return; }
-  const freq={};
-  feedbacks.forEach(f=>{ f.texto.toLowerCase().split(/\W+/).forEach(w=>{ if(w.length<4) return; freq[w]=(freq[w]||0)+1; }); });
-  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`• ${k} (${v})`).join('<br>');
-  document.getElementById('fbReport').innerHTML = `Total de feedbacks: <b>${feedbacks.length}</b><br>Palavras recorrentes:<br>${top||'—'}`;
-}
+    /* Splash inicial */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f0f0f, #1b1e25, #243149);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+      animation: fadeOut 1.8s ease-in-out 2.3s forwards;
+    }
+    #splash h1 {
+      font-size: 52px;
+      margin: 0;
+      background: linear-gradient(90deg, #6ea8fe, #a8c5ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    #splash p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
+    }
 
-document.getElementById('btnBackup').addEventListener('click',()=>{
-  const data={temas,settings:{examDate:examDate.value, perDay:perDay.value, modo:modoSugerido.value}, disponibilidade, semanaPlano, feedbacks};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='estudos_backup.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-document.getElementById('btnRestore').addEventListener('click',()=>backupInput.click());
-document.getElementById('backupInput').addEventListener('change',ev=>{
-  const f=ev.target.files[0]; if(!f) return;
-  const fr=new FileReader();
-  fr.onload=e=>{ try{ const d=JSON.parse(e.target.result);
-    temas=d.temas||[]; if(d.settings){ examDate.value=d.settings.examDate||''; perDay.value=d.settings.perDay||2; modoSugerido.value=d.settings.modo||'auto'; }
-    disponibilidade=d.disponibilidade||{}; semanaPlano=d.semanaPlano||[]; feedbacks=d.feedbacks||[]; saveAll(); renderAll();
-  }catch(err){ alert('Erro ao restaurar: '+err.message);} };
-  fr.readAsText(f);
-});
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(20,20,20,0.9);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--borda);
+    }
 
-document.getElementById('btnAdd').addEventListener('click',addTema);
-document.getElementById('btnExport').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify(temas,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cronograma_export.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-document.getElementById('btnImport').addEventListener('click',()=>fileInput.click());
-document.getElementById('fileInput').addEventListener('change',ev=>{
-  const f=ev.target.files[0]; if(!f) return;
-  const fr=new FileReader();
-  fr.onload=e=>{ try{ const arr=JSON.parse(e.target.result); if(!Array.isArray(arr)) throw new Error('JSON deve ser um array'); temas=arr; saveAll(); renderAll(); } catch(err){ alert('Erro ao importar: '+err.message); } };
-  fr.readAsText(f);
-});
-document.getElementById('btnGenerateToday').addEventListener('click',gerarHoje);
-document.getElementById('btnClearToday').addEventListener('click',()=>{ document.getElementById('todayList').innerHTML=''; document.getElementById('sugestoesHoje').innerHTML='—'; });
-document.getElementById('btnSaveDisp').addEventListener('click',()=>{readDisp(); alert('Disponibilidade salva.');});
-document.getElementById('btnGerarSemana').addEventListener('click',()=>{readDisp(); gerarSemana();});
-document.getElementById('btnSendFB').addEventListener('click',sendFeedback);
-document.getElementById('btnReset').addEventListener('click',()=>{ if(!confirm('Isto apagará todos os dados locais. Continuar?')) return; localStorage.removeItem(LSK); localStorage.removeItem(LSKS); localStorage.removeItem(LSKW); localStorage.removeItem(LSKF); location.reload(); });
+    h2 {
+      margin-top: 0;
+    }
 
-function renderAll(){ renderSummaryToday(); renderTemas(); renderProgress(); renderSemana(); renderDispForm(); renderStats(); renderFBReport(); }
-(function(){
-  loadAll();
-  if(!dias.some(d=>disponibilidade[d]>0)){ dias.forEach(d=>disponibilidade[d]=0); }
-  renderAll();
-  if('serviceWorker' in navigator){ window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js')); }
-})();
-</script>
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+    .tab {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--borda);
+      background: #1a1a1a;
+      color: var(--texto);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab.active {
+      background: var(--azul);
+      color: #0b1220;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    .card {
+      background: rgba(28,28,28,0.86);
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      margin-bottom: 16px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button.primary {
+      background: var(--azul);
+      color: #0b1220;
+      font-weight: 600;
+    }
+    button.small { font-size: 12px; padding: 6px 10px; }
+
+    .muted { color: var(--muted); font-size: 13px; }
+    .pill {
+      display: inline-block;
+      background: #1f1f1f;
+      border: 1px solid var(--borda);
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-right: 6px;
+      font-size: 12px;
+    }
+    .ok { color: var(--ok); }
+    .erro { color: var(--erro); }
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <h1>V</h1>
+    <p>Organize. Estude. Evolua.</p>
+  </div>
+
+  <header>
+    <div>
+      <h2>V Estudos — Cronograma Inteligente</h2>
+      <div class="muted">Seu painel de desempenho e aprendizado adaptativo</div>
+    </div>
+    <div>
+      <button id="btnUpdate" class="primary small">🔄 Atualizar app</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" data-tab="hoje">📅 Hoje</div>
+      <div class="tab" data-tab="semana">🗓️ Semana</div>
+      <div class="tab" data-tab="temas">📚 Temas</div>
+      <div class="tab" data-tab="stats">📈 Estatísticas</div>
+      <div class="tab" data-tab="feedback">💬 Feedback</div>
+      <div class="tab" data-tab="config">⚙️ Configurações</div>
+    </div>
+
+    <!-- Abas -->
+    <section id="hoje" class="tab-content">
+      <div class="card">
+        <h3>Plano do Dia</h3>
+        <p class="muted">Gere seu plano conforme tempo e prioridades. O sistema ajusta automaticamente com base no seu desempenho.</p>
+        <div id="plan-hoje"></div>
+      </div>
+    </section>
+
+    <section id="semana" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Cronograma Semanal</h3>
+        <div id="plan-semana"></div>
+      </div>
+    </section>
+
+    <section id="temas" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Temas e Pastas</h3>
+        <p class="muted">Adicione temas e organize em pastas (Trauma, Coluna, Mão...).</p>
+        <div id="pastas"></div>
+      </div>
+    </section>
+
+    <section id="stats" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Estatísticas e Desempenho</h3>
+        <div id="graficos"></div>
+      </div>
+    </section>
+
+    <section id="feedback" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Envie seu feedback</h3>
+        <textarea id="feedbackText" rows="4" style="width:100%;border-radius:8px;border:1px solid var(--borda);background:#171717;color:var(--texto);padding:8px;" placeholder="Escreva sua sugestão, ideia ou dúvida..."></textarea>
+        <br>
+        <button id="sendFeedback" class="primary small">Enviar</button>
+        <div id="feedbackResult" class="muted" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
+    <section id="config" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Configurações e Backup</h3>
+        <button class="small" id="backupBtn">💾 Salvar meus dados</button>
+        <button class="small" id="restoreBtn">📂 Restaurar dados salvos</button>
+        <input type="file" id="fileInput" accept=".json" style="display:none;">
+        <p class="muted">Gere um arquivo de segurança dos seus dados ou recupere quando quiser.</p>
+        <hr>
+        <button class="small" id="toggleTheme">🌗 Alternar tema</button>
+        <button class="small" id="tutorialBtn">📘 Ver tutorial</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>© 2025 V Estudos — Cronograma Inteligente</p>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
