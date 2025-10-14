@@ -1,0 +1,31 @@
+:root{
+  --bg:#0f1115; --card:#171a21; --panel:#141821; --text:#e6e6e6; --muted:#9aa4af;
+  --border:#2a2f3a; --accent:#4da3ff; --accent-2:#28d09a; --danger:#ff5f5f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.container{max-width:1120px;margin:0 auto;padding:1.25rem}
+header{padding:2rem 1.25rem;border-bottom:1px solid var(--border);text-align:center}
+h1{margin:0 0 .5rem 0}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin:1.5rem 0}
+.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-decoration:none;color:var(--text);transition:transform .12s ease,box-shadow .12s ease,border .12s ease}
+.card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.card .emoji{font-size:1.6rem;display:block;margin-bottom:.5rem}
+.card small{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin:1.5rem 0}
+.flex-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
+.btn{background:var(--accent);color:#0c1018;border:none;border-radius:10px;padding:.6rem .9rem;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.05)}
+.btn.secondary{background:#273043;color:var(--text)}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.timer{font-size:1.4rem;font-variant-numeric:tabular-nums;margin:.25rem 0 0.5rem}
+.progress{background:#1e2430;border:1px solid var(--border);height:10px;border-radius:999px;overflow:hidden}
+.progress-bar{background:linear-gradient(90deg,var(--accent),var(--accent-2));height:100%;width:0%;transition:width .2s ease}
+#quickNotes{width:100%;background:#0f131c;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:.75rem}
+input[type="number"]{width:100%;padding:.5rem;border:1px solid var(--border);border-radius:8px;background:#0f131c;color:var(--text);margin:.35rem 0 .75rem}
+.status{margin-top:.5rem;color:var(--muted)}
+.footer{border-top:1px solid var(--border);text-align:center;color:var(--muted)}
+a{color:var(--accent)}
