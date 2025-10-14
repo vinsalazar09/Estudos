@@ -1,50 +1,21 @@
-// V Estudos — Cronograma Inteligente v3.1
-// Service Worker — cache inteligente com atualização automática
-
-const CACHE_NAME = "v-estudos-cache-v3.1";
+// SW v4.0 — cache para PWA
+const CACHE_NAME = "v-estudos-cache-v4.0";
 const urlsToCache = [
-  "./",
-  "./index.html",
-  "./app.js",
-  "./manifest.json",
-  "./tutorial.html",
-  "./tutorial.js",
-  "./assets/tutorial.mp4"
+  "./","./index.html","./app.js","./pastaManager.js","./themeManager.js",
+  "./statsManager.js","./userConfig.js","./scheduler.js","./manifest.json",
+  "./tutorial.html","./tutorial.js"
 ];
 
-// Instalação e cache inicial
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log("💾 Arquivos armazenados no cache inicial");
-      return cache.addAll(urlsToCache);
-    })
-  );
+self.addEventListener("install", e=>{
+  e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)));
   self.skipWaiting();
 });
-
-// Ativação — limpa versões antigas
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      );
-    })
-  );
+self.addEventListener("activate", e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
-
-// Interceptar requisições (modo offline)
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return (
-        response ||
-        fetch(event.request).catch(() =>
-          new Response("Você está offline. Verifique sua conexão.")
-        )
-      );
-    })
+self.addEventListener("fetch", e=>{
+  e.respondWith(
+    caches.match(e.request).then(r=> r || fetch(e.request).catch(()=> new Response("Offline.")))
   );
 });
