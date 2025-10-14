@@ -191,10 +191,19 @@
       </div>
     </section>
 
+    <!-- NOVA SEÇÃO ATUALIZADA -->
     <section id="temas" class="tab-content" style="display:none;">
       <div class="card">
         <h3>Temas e Pastas</h3>
-        <p class="muted">Adicione temas e organize em pastas (Trauma, Coluna, Mão...).</p>
+        <p class="muted">Organize seus temas por áreas. Crie, renomeie e exclua pastas conforme sua necessidade.</p>
+
+        <!-- Barra de ações -->
+        <div class="row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+          <button class="small primary" id="btnNovaPasta">➕ Nova Pasta</button>
+          <button class="small" id="btnRenomearPasta">✏️ Editar Pastas</button>
+          <button class="small" id="btnExcluirPasta">🗑️ Excluir</button>
+        </div>
+
         <div id="pastas"></div>
       </div>
     </section>
@@ -234,6 +243,27 @@
     <p>© 2025 V Estudos — Cronograma Inteligente</p>
   </footer>
 
+  <!-- MODAL DE GERENCIAMENTO DE PASTAS -->
+  <div id="modalPastas" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:rgba(28,28,28,.96); border:1px solid #2b2b2b; border-radius:12px; padding:14px; width:min(520px, 92%);">
+      <h3 id="modalTitulo" style="margin:0 0 6px;">Gerenciar Pastas</h3>
+      <p class="muted" id="modalHint" style="margin:0 0 12px;">Digite o nome e confirme.</p>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+        <select id="modalSelect" style="flex:1; min-width:160px; display:none; border-radius:8px; border:1px solid #2b2b2b; background:#171717; color:#e8eef6; padding:10px;"></select>
+        <input id="modalInput" placeholder="Nome da pasta" style="flex:2; min-width:220px; border-radius:8px; border:1px solid #2b2b2b; background:#171717; color:#e8eef6; padding:10px;">
+      </div>
+
+      <div class="muted" id="modalObs" style="font-size:12px;"></div>
+
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+        <button class="small" id="modalCancelar">Cancelar</button>
+        <button class="small primary" id="modalConfirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
+  <script src="pastaManager.js"></script>
 </body>
 </html>
