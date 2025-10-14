@@ -1,22 +1,50 @@
-const CACHE='estudos-pwa-v3full-2';
-const ASSETS=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./cronograma.json'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{
-  e.waitUntil((async()=>{
-    const keys=await caches.keys();
-    await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));
-    await self.clients.claim();
-  })());
+// V Estudos — Cronograma Inteligente v3.1
+// Service Worker — cache inteligente com atualização automática
+
+const CACHE_NAME = "v-estudos-cache-v3.1";
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./app.js",
+  "./manifest.json",
+  "./tutorial.html",
+  "./tutorial.js",
+  "./assets/tutorial.mp4"
+];
+
+// Instalação e cache inicial
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log("💾 Arquivos armazenados no cache inicial");
+      return cache.addAll(urlsToCache);
+    })
+  );
+  self.skipWaiting();
 });
-self.addEventListener('fetch',e=>{
-  const req=e.request;
-  e.respondWith(
-    caches.match(req).then(cached=>cached||fetch(req).then(res=>{
-      const copy=res.clone();
-      if(req.method==='GET' && res.ok){
-        caches.open(CACHE).then(c=>c.put(req, copy));
-      }
-      return res;
-    }).catch(()=>caches.match('./')))
+
+// Ativação — limpa versões antigas
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Interceptar requisições (modo offline)
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return (
+        response ||
+        fetch(event.request).catch(() =>
+          new Response("Você está offline. Verifique sua conexão.")
+        )
+      );
+    })
   );
 });
