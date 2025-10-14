@@ -1,182 +1,137 @@
-// pastaManager.js — v3.4.0
-// Gerenciador visual de pastas: criar, renomear, excluir + integração com temas e stats
+// v4.0 — Gerenciador de Pastas (criar/renomear/excluir) + lista básica
 
 (function(){
-  if (!window.dados) window.dados = { pastas: [], temas: [] };
-  if (!Array.isArray(window.dados.pastas)) window.dados.pastas = [];
-  if (!Array.isArray(window.dados.temas)) window.dados.temas = [];
-  if (typeof window.salvar !== "function") window.salvar = () => localStorage.setItem("vEstudosData", JSON.stringify(window.dados));
+  if(!window.dados) window.dados={pastas:[],temas:[]};
+  if(!Array.isArray(dados.pastas)) dados.pastas=[];
+  if(!Array.isArray(dados.temas)) dados.temas=[];
+  if(typeof window.salvar!=="function") window.salvar=()=>localStorage.setItem("vEstudosData", JSON.stringify(dados));
 
-  const pastasDiv = document.getElementById("pastas");
+  const pastasDiv=document.getElementById("pastas");
   const btnNova = document.getElementById("btnNovaPasta");
   const btnRenomear = document.getElementById("btnRenomearPasta");
   const btnExcluir = document.getElementById("btnExcluirPasta");
 
-  const modal = document.getElementById("modalPastas");
-  const modalTitulo = document.getElementById("modalTitulo");
-  const modalHint = document.getElementById("modalHint");
-  const modalObs = document.getElementById("modalObs");
-  const modalSelect = document.getElementById("modalSelect");
-  const modalInput = document.getElementById("modalInput");
-  const modalCancelar = document.getElementById("modalCancelar");
-  const modalConfirmar = document.getElementById("modalConfirmar");
+  // Modal
+  const modal=document.getElementById("modalPastas");
+  const modalTitulo=document.getElementById("modalTitulo");
+  const modalHint=document.getElementById("modalHint");
+  const modalObs=document.getElementById("modalObs");
+  const modalSelect=document.getElementById("modalSelect");
+  const modalInput=document.getElementById("modalInput");
+  const modalCancelar=document.getElementById("modalCancelar");
+  const modalConfirmar=document.getElementById("modalConfirmar");
 
-  let mode = null;
-  let lastEdited = null;
+  let mode=null, lastEdited=null;
 
-  function renderPastasEnhanced(){
-    if(!pastasDiv) return;
-    pastasDiv.innerHTML = "";
-
-    if (!window.dados.pastas.length) {
-      const c = document.createElement("div");
-      c.className = "card";
-      c.innerHTML = `<div class="muted">Nenhuma pasta criada ainda. Use “➕ Nova Pasta”.</div>`;
-      pastasDiv.appendChild(c);
-      return;
-    }
-
-    window.dados.pastas.forEach(nome => {
-      const temasDaPasta = window.dados.temas.filter(t => t.pasta === nome);
-      const concluidos = temasDaPasta.filter(t => t.status === "concluido").length;
-      const total = temasDaPasta.length;
-      const revisoesPend = temasDaPasta.filter(t => t.proximaRevisao && (daysBetween(todayISO(), t.proximaRevisao) <= 0)).length;
-
-      const card = document.createElement("div");
-      card.className = "card";
-      if (lastEdited && lastEdited === nome) card.style.boxShadow = "0 0 0 2px rgba(110,168,254,.65)";
-
-      card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-          <div>
-            <strong>${nome}</strong>
-            <div class="muted" style="font-size:12px; margin-top:2px;">
-              Temas: <b>${total}</b> • Concluídos: <b>${concluidos}</b> • Revisões pendentes: <b>${revisoesPend}</b>
-            </div>
-          </div>
-          <div>
-            <span class="pill">${suggestionFromFolder(nome, temasDaPasta)}</span>
-          </div>
-        </div>
-        <div style="margin-top:8px;" id="temas-${cssId(nome)}"></div>
-      `;
-
-      const temasBox = card.querySelector(`#temas-${cssId(nome)}`);
-      if (temasDaPasta.length === 0) {
-        temasBox.innerHTML = `<span class="muted">Sem temas nesta pasta.</span>`;
-      } else {
-        temasDaPasta.forEach(t => {
-          const el = document.createElement("span");
-          el.className = "pill";
-          el.textContent = t.nome || t.tema || "(sem nome)";
-          temasBox.appendChild(el);
-        });
-      }
-
-      pastasDiv.appendChild(card);
-    });
-  }
+  function cssId(s){ return String(s).replace(/\s+/g,'-').replace(/[^\w\-]/g,'').toLowerCase(); }
+  function todayISO(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+  function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+  const sum = a => a.reduce((x,y)=>x+(Number(y)||0),0);
 
   function suggestionFromFolder(nome, temas){
-    const erros = sum(temas.map(t=>t.erros||0));
-    const acertos = sum(temas.map(t=>t.acertos||0));
-    const revisao = temas.some(t => t.proximaRevisao && daysBetween(todayISO(), t.proximaRevisao) <= 0);
-    const score = (revisao?2:0)+(erros>acertos?2:0);
-    if(score>=3) return "🧠 Reforçar questões";
-    if(revisao) return "📘 Revisar teoria";
-    return "🩻 Estudo teórico";
+    const acertos=sum(temas.map(t=>t.acertos||0)), erros=sum(temas.map(t=>t.erros||0));
+    const pend=temas.some(t=>t.proximaRevisao && daysBetween(todayISO(), t.proximaRevisao)<=0);
+    const score=(pend?2:0)+(erros>acertos?2:0);
+    if(score>=3) return "🧠 Reforçar questões (revisão ativa)";
+    if(pend) return "📘 Revisar teoria";
+    return "🩻 Estudo teórico + resumo";
+  }
+
+  function renderPastas(){
+    if(!pastasDiv) return;
+    pastasDiv.innerHTML="";
+    if(!dados.pastas.length){
+      const c=document.createElement("div"); c.className="card";
+      c.innerHTML=`<div class="muted">Nenhuma pasta. Use “➕ Nova Pasta”.</div>`;
+      pastasDiv.appendChild(c); return;
+    }
+    dados.pastas.forEach(nome=>{
+      const temas=dados.temas.filter(t=>t.pasta===nome);
+      const concl=temas.filter(t=>t.status==="Concluído").length;
+      const pendRev=temas.filter(t=>t.proximaRevisao && daysBetween(todayISO(),t.proximaRevisao)<=0).length;
+
+      const card=document.createElement("div"); card.className="card";
+      if(lastEdited===nome) card.style.boxShadow="0 0 0 2px rgba(110,168,254,.65)";
+      card.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div>
+            <strong>${nome}</strong>
+            <div class="muted" style="font-size:12px;margin-top:2px;">Temas: <b>${temas.length}</b> • Concluídos: <b>${concl}</b> • Revisões pendentes: <b>${pendRev}</b></div>
+          </div>
+          <div><span class="pill">${suggestionFromFolder(nome, temas)}</span></div>
+        </div>
+        <div class="temaToolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;margin-bottom:4px;">
+          <button class="small primary" data-addtema="${nome}">➕ Adicionar tema</button>
+        </div>
+        <div id="temas-${cssId(nome)}"></div>
+      `;
+      pastasDiv.appendChild(card);
+    });
+    // deixa a listagem de temas para o themeManager renderizar
+    window.dispatchEvent(new CustomEvent("dados:changed"));
   }
 
   function openModal(m){
-    mode = m;
-    modal.style.display = "flex";
-    modalInput.value = "";
-    modalSelect.innerHTML = "";
-    modalObs.textContent = "";
-
-    if (mode === "novo") {
-      modalTitulo.textContent = "Nova Pasta";
-      modalHint.textContent = "Digite um nome para a nova pasta.";
-      modalSelect.style.display = "none";
-      modalInput.style.display = "block";
-      modalInput.focus();
+    mode=m; modal.style.display="flex"; modalInput.value=""; modalSelect.innerHTML=""; modalObs.textContent="";
+    if(m==="novo"){
+      modalTitulo.textContent="Nova Pasta"; modalHint.textContent="Digite um nome para a nova pasta.";
+      modalSelect.style.display="none"; modalInput.style.display="block"; modalInput.focus();
     }
-    if (mode === "renomear") {
-      modalTitulo.textContent = "Renomear Pasta";
-      modalHint.textContent = "Escolha a pasta e informe o novo nome.";
-      fillSelect();
-      modalSelect.style.display = "inline-block";
-      modalInput.style.display = "inline-block";
+    if(m==="renomear"){
+      modalTitulo.textContent="Renomear Pasta"; modalHint.textContent="Escolha e informe o novo nome.";
+      fillSelect(); modalSelect.style.display="inline-block"; modalInput.style.display="inline-block";
     }
-    if (mode === "excluir") {
-      modalTitulo.textContent = "Excluir Pasta";
-      modalHint.textContent = "Escolha a pasta a excluir. Temas dentro não serão apagados.";
-      fillSelect();
-      modalSelect.style.display = "inline-block";
-      modalInput.style.display = "none";
+    if(m==="excluir"){
+      modalTitulo.textContent="Excluir Pasta"; modalHint.textContent="Escolha a pasta a excluir (temas permanecem).";
+      fillSelect(); modalSelect.style.display="inline-block"; modalInput.style.display="none";
+      modalObs.textContent="Os temas dessa pasta não serão apagados; ficarão sem pasta até você mover.";
     }
   }
-
-  function closeModal(){ modal.style.display = "none"; mode = null; }
+  function closeModal(){ modal.style.display="none"; mode=null; }
   modalCancelar.addEventListener("click", closeModal);
-  modal.addEventListener("click", e => { if(e.target===modal) closeModal(); });
+  modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
 
-  btnNova?.addEventListener("click", ()=> openModal("novo"));
-  btnRenomear?.addEventListener("click", ()=> openModal("renomear"));
-  btnExcluir?.addEventListener("click", ()=> openModal("excluir"));
+  function fillSelect(){
+    modalSelect.innerHTML="";
+    dados.pastas.forEach(p=>{
+      const o=document.createElement("option"); o.value=p; o.textContent=p; modalSelect.appendChild(o);
+    });
+  }
 
-  modalConfirmar.addEventListener("click", ()=>{
-    if (mode === "novo") {
-      const nome = modalInput.value.trim();
-      if (!nome) return alert("Informe um nome.");
-      if (window.dados.pastas.includes(nome)) return alert("Já existe uma pasta com esse nome.");
-      window.dados.pastas.push(nome);
-      lastEdited = nome;
-      window.salvar();
-      renderPastasEnhanced();
-      closeModal();
-      return;
+  btnNova?.addEventListener("click",()=>openModal("novo"));
+  btnRenomear?.addEventListener("click",()=>openModal("renomear"));
+  btnExcluir?.addEventListener("click",()=>openModal("excluir"));
+
+  modalConfirmar.addEventListener("click",()=>{
+    if(mode==="novo"){
+      const nome=(modalInput.value||"").trim(); if(!nome) return alert("Informe um nome.");
+      if(dados.pastas.includes(nome)) return alert("Já existe uma pasta com esse nome.");
+      dados.pastas.push(nome); lastEdited=nome; salvar(); renderPastas(); return closeModal();
     }
-
-    if (mode === "renomear") {
-      const old = modalSelect.value;
-      const novo = modalInput.value.trim();
-      if (!old || !novo) return alert("Preencha tudo.");
-      const i = window.dados.pastas.indexOf(old);
-      if (i>=0) window.dados.pastas[i] = novo;
-      window.dados.temas.forEach(t => { if(t.pasta===old) t.pasta = novo; });
-      lastEdited = novo;
-      window.salvar();
-      renderPastasEnhanced();
-      closeModal();
-      return;
+    if(mode==="renomear"){
+      const old=modalSelect.value, novo=(modalInput.value||"").trim();
+      if(!old||!novo) return alert("Preencha tudo.");
+      if(dados.pastas.includes(novo)) return alert("Já existe uma pasta com esse nome.");
+      const idx=dados.pastas.indexOf(old); if(idx>=0) dados.pastas[idx]=novo;
+      dados.temas.forEach(t=>{ if(t.pasta===old) t.pasta=novo; });
+      lastEdited=novo; salvar(); renderPastas(); return closeModal();
     }
-
-    if (mode === "excluir") {
-      const alvo = modalSelect.value;
-      if (!alvo) return alert("Escolha a pasta.");
-      if (!confirm(`Excluir a pasta “${alvo}”? Temas não serão apagados.`)) return;
-      window.dados.pastas = window.dados.pastas.filter(p => p!==alvo);
-      window.dados.temas.forEach(t => { if(t.pasta===alvo) t.pasta=""; });
-      lastEdited = null;
-      window.salvar();
-      renderPastasEnhanced();
-      closeModal();
+    if(mode==="excluir"){
+      const alvo=modalSelect.value; if(!alvo) return alert("Escolha a pasta.");
+      if(!confirm(`Excluir “${alvo}”? Temas ficam sem pasta.`)) return;
+      dados.pastas = dados.pastas.filter(p=>p!==alvo);
+      dados.temas.forEach(t=>{ if(t.pasta===alvo) t.pasta=""; });
+      lastEdited=null; salvar(); renderPastas(); return closeModal();
     }
   });
 
-  function fillSelect(){
-    modalSelect.innerHTML = "";
-    window.dados.pastas.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p; opt.textContent = p;
-      modalSelect.appendChild(opt);
-    });
-  }
-  function cssId(s){return s.replace(/\s+/g,'-').toLowerCase();}
-  function sum(a){return a.reduce((x,y)=>x+(Number(y)||0),0);}
-  function todayISO(){const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10);}
-  function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
+  // Botão "Adicionar tema" (delegação)
+  pastasDiv?.addEventListener("click",(e)=>{
+    const btn=e.target.closest("[data-addtema]"); if(!btn) return;
+    const pasta=btn.getAttribute("data-addtema");
+    window.dispatchEvent(new CustomEvent("tema:novo",{detail:{pasta}}));
+  });
 
-  renderPastasEnhanced();
+  renderPastas();
+  window.addEventListener("dados:changed", renderPastas);
 })();
