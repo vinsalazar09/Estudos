@@ -3,19 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Módulos de Estudo</title>
+  <title>Gerenciar Módulos</title>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
   <header class="container">
-    <h1>📚 Módulos</h1>
-    <p class="muted">Estrutura base para adicionar seus conteúdos.</p>
+    <h1>📚 Gerenciar Módulos</h1>
+    <p class="muted">Crie, edite e exclua seus módulos. Tudo salvo localmente (sem servidor).</p>
   </header>
+
   <main class="container">
-    <section class="panel">
-      <p>Crie novos arquivos HTML aqui (ex.: <code>modules/meu-topico.html</code>) e linke a partir do índice.</p>
-      <p><a href="../index.html">⬅ Voltar</a></p>
+    <section class="panel modules-wrap">
+      <div class="modules-form">
+        <label for="modName">Nome do módulo</label>
+        <input type="text" id="modName" placeholder="Ex.: Fasceíte Plantar" />
+        <label for="modDesc">Descrição breve</label>
+        <input type="text" id="modDesc" placeholder="Ex.: Talalgias, fisiopatologia e conduta" />
+        <button id="createModule" class="btn">Criar módulo</button>
+        <small class="muted">Dica: você pode editar o conteúdo completo depois.</small>
+      </div>
+
+      <div class="modules-list">
+        <h3>Meus módulos <span id="count" class="badge">0</span></h3>
+        <div id="list"></div>
+      </div>
     </section>
+
+    <section class="panel" id="editorPanel" style="display:none;">
+      <h2 id="editorTitle">Editar módulo</h2>
+      <label for="modTitleEdit">Título</label>
+      <input type="text" id="modTitleEdit" />
+      <label for="modDescEdit">Descrição</label>
+      <input type="text" id="modDescEdit" />
+      <label for="modContent">Conteúdo (livre)</label>
+      <textarea id="modContent" rows="10" placeholder="Anote aqui seu conteúdo, Q&A, referências..."></textarea>
+      <div class="btn-row" style="margin-top:.6rem;">
+        <button id="saveModule" class="btn">Salvar alterações</button>
+        <button id="exportModule" class="btn ghost">Exportar .txt</button>
+        <button id="closeEditor" class="btn secondary">Fechar</button>
+      </div>
+      <small class="muted">As alterações são salvas localmente. Você pode exportar para .txt quando quiser.</small>
+    </section>
+
+    <p><a href="../index.html">⬅ Voltar à Página Inicial</a></p>
   </main>
+
+  <script src="modules.js"></script>
 </body>
 </html>
