@@ -6,159 +6,37 @@
   <title>V Estudos — Cronograma Inteligente</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f0f0f">
-
   <style>
-    :root {
-      --grafite1: #0f0f0f;
-      --grafite2: #1f1f1f;
-      --azul: #6ea8fe;
-      --texto: #e8eef6;
-      --muted: #a0a8b5;
-      --borda: #2b2b2b;
-      --ok: #4cd37b;
-      --erro: #ff6b6b;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      background: linear-gradient(135deg, var(--grafite1), var(--grafite2));
-      color: var(--texto);
-      overflow-x: hidden;
-    }
-
-    /* Splash inicial */
-    #splash {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, #0f0f0f, #1b1e25, #243149);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 1000;
-      animation: fadeOut 1.8s ease-in-out 2.3s forwards;
-    }
-    #splash h1 {
-      font-size: 52px;
-      margin: 0;
-      background: linear-gradient(90deg, #6ea8fe, #a8c5ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;
-      font-weight: 700;
-    }
-    #splash p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: rgba(20,20,20,0.9);
-      backdrop-filter: blur(8px);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      border-bottom: 1px solid var(--borda);
-    }
-
-    h2 {
-      margin-top: 0;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 10px 0;
-    }
-    .tab {
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--borda);
-      background: #1a1a1a;
-      color: var(--texto);
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .tab.active {
-      background: var(--azul);
-      color: #0b1220;
-      font-weight: 600;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 12px;
-    }
-
-    .card {
-      background: rgba(28,28,28,0.86);
-      border: 1px solid var(--borda);
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      margin-bottom: 16px;
-    }
-
-    button {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    button.primary {
-      background: var(--azul);
-      color: #0b1220;
-      font-weight: 600;
-    }
-    button.small { font-size: 12px; padding: 6px 10px; }
-
-    .muted { color: var(--muted); font-size: 13px; }
-    .pill {
-      display: inline-block;
-      background: #1f1f1f;
-      border: 1px solid var(--borda);
-      border-radius: 999px;
-      padding: 6px 12px;
-      margin-right: 6px;
-      font-size: 12px;
-    }
-    .ok { color: var(--ok); }
-    .erro { color: var(--erro); }
-
-    footer {
-      text-align: center;
-      padding: 18px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
+    :root { --grafite1:#0f0f0f; --grafite2:#1f1f1f; --azul:#6ea8fe; --texto:#e8eef6; --muted:#a0a8b5; --borda:#2b2b2b; --ok:#4cd37b; --erro:#ff6b6b; }
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(135deg,var(--grafite1),var(--grafite2));color:var(--texto);overflow-x:hidden;}
+    #splash{position:fixed;inset:0;background:linear-gradient(135deg,#0f0f0f,#1b1e25,#243149);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:1000;animation:fadeOut 1.8s ease-in-out 2.3s forwards;}
+    #splash h1{font-size:52px;margin:0;background:linear-gradient(90deg,#6ea8fe,#a8c5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px;font-weight:700;}
+    #splash p{color:var(--muted);font-size:14px;margin-top:8px;letter-spacing:1px;}
+    @keyframes fadeOut{to{opacity:0;visibility:hidden}}
+    header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(20,20,20,.9);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50;border-bottom:1px solid var(--borda);}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+    .tab{padding:8px 14px;border-radius:999px;border:1px solid var(--borda);background:#1a1a1a;color:var(--texto);cursor:pointer;font-size:14px;}
+    .tab.active{background:var(--azul);color:#0b1220;font-weight:600;}
+    .container{max-width:1100px;margin:0 auto;padding:12px;}
+    .card{background:rgba(28,28,28,.86);border:1px solid var(--borda);border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);margin-bottom:16px;}
+    button{padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-size:14px;}
+    button.primary{background:var(--azul);color:#0b1220;font-weight:600;}
+    button.small{font-size:12px;padding:6px 10px;}
+    .muted{color:var(--muted);font-size:13px;}
+    .pill{display:inline-block;background:#1f1f1f;border:1px solid var(--borda);border-radius:999px;padding:6px 12px;margin-right:6px;font-size:12px;}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--borda);padding:6px;text-align:left;font-size:13px;}
+    footer{text-align:center;padding:18px;color:var(--muted);font-size:12px;}
+    input,select,textarea{border-radius:8px;border:1px solid var(--borda);background:#171717;color:#e8eef6;padding:10px;}
   </style>
 </head>
-
 <body>
-  <!-- Splash Screen -->
-  <div id="splash">
-    <h1>V</h1>
-    <p>Organize. Estude. Evolua.</p>
-  </div>
+  <div id="splash"><h1>V</h1><p>Organize. Estude. Evolua.</p></div>
 
   <header>
     <div>
-      <h2>V Estudos — Cronograma Inteligente</h2>
-      <div class="muted">Seu painel de desempenho e aprendizado adaptativo</div>
+      <h2 style="margin:0;">V Estudos — Cronograma Inteligente</h2>
+      <div class="muted">Painel adaptativo de estudos</div>
     </div>
     <div>
       <button id="btnUpdate" class="primary small">🔄 Atualizar app</button>
@@ -171,91 +49,104 @@
       <div class="tab" data-tab="semana">🗓️ Semana</div>
       <div class="tab" data-tab="temas">📚 Temas</div>
       <div class="tab" data-tab="stats">📈 Estatísticas</div>
-      <div class="tab" data-tab="feedback">💬 Feedback</div>
       <div class="tab" data-tab="config">⚙️ Configurações</div>
+      <div class="tab" data-tab="feedback">💬 Feedback</div>
     </div>
 
-    <!-- Abas -->
+    <!-- HOJE -->
     <section id="hoje" class="tab-content">
       <div class="card">
         <h3>Plano do Dia</h3>
-        <p class="muted">Gere seu plano conforme tempo e prioridades. O sistema ajusta automaticamente com base no seu desempenho.</p>
+        <p class="muted">Gere seu plano considerando disponibilidade, revisões e desempenho.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <input type="date" id="hojeData">
+          <button class="small primary" id="btnGerarHoje">⚡ Gerar plano de hoje</button>
+        </div>
         <div id="plan-hoje"></div>
       </div>
     </section>
 
+    <!-- SEMANA -->
     <section id="semana" class="tab-content" style="display:none;">
       <div class="card">
         <h3>Cronograma Semanal</h3>
+        <p class="muted">Distribui os estudos conforme suas horas livres e prioridades.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <input type="date" id="semanaInicio">
+          <button class="small primary" id="btnGerarSemana">🗓️ Gerar semana</button>
+        </div>
         <div id="plan-semana"></div>
       </div>
     </section>
 
-    <!-- NOVA SEÇÃO ATUALIZADA -->
+    <!-- TEMAS -->
     <section id="temas" class="tab-content" style="display:none;">
       <div class="card">
         <h3>Temas e Pastas</h3>
-        <p class="muted">Organize seus temas por áreas. Crie, renomeie e exclua pastas conforme sua necessidade.</p>
-
-        <!-- Barra de ações -->
-        <div class="row" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+        <p class="muted">Organize seus temas e atividades por área.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
           <button class="small primary" id="btnNovaPasta">➕ Nova Pasta</button>
           <button class="small" id="btnRenomearPasta">✏️ Editar Pastas</button>
           <button class="small" id="btnExcluirPasta">🗑️ Excluir</button>
         </div>
-
         <div id="pastas"></div>
       </div>
     </section>
 
+    <!-- ESTATÍSTICAS -->
     <section id="stats" class="tab-content" style="display:none;">
       <div class="card">
         <h3>Estatísticas e Desempenho</h3>
+        <button id="btnAnalisar" class="small primary" style="margin-bottom:8px;">🔍 Analisar agora</button>
         <div id="graficos"></div>
       </div>
     </section>
 
-    <section id="feedback" class="tab-content" style="display:none;">
-      <div class="card">
-        <h3>Envie seu feedback</h3>
-        <textarea id="feedbackText" rows="4" style="width:100%;border-radius:8px;border:1px solid var(--borda);background:#171717;color:var(--texto);padding:8px;" placeholder="Escreva sua sugestão, ideia ou dúvida..."></textarea>
-        <br>
-        <button id="sendFeedback" class="primary small">Enviar</button>
-        <div id="feedbackResult" class="muted" style="margin-top:8px;"></div>
-      </div>
-    </section>
-
+    <!-- CONFIGURAÇÕES -->
     <section id="config" class="tab-content" style="display:none;">
       <div class="card">
-        <h3>Configurações e Backup</h3>
+        <h3>Disponibilidade semanal</h3>
+        <div id="configDisponibilidade"></div>
+      </div>
+      <div class="card">
+        <h3>Preferências</h3>
+        <div id="configPreferencias"></div>
+      </div>
+      <div class="card">
+        <h3>Backup</h3>
         <button class="small" id="backupBtn">💾 Salvar meus dados</button>
-        <button class="small" id="restoreBtn">📂 Restaurar dados salvos</button>
+        <button class="small" id="restoreBtn">📂 Restaurar dados</button>
         <input type="file" id="fileInput" accept=".json" style="display:none;">
-        <p class="muted">Gere um arquivo de segurança dos seus dados ou recupere quando quiser.</p>
+        <p class="muted">Seus dados ficam no seu dispositivo. O backup é um arquivo .json que você pode guardar e restaurar.</p>
         <hr>
         <button class="small" id="toggleTheme">🌗 Alternar tema</button>
         <button class="small" id="tutorialBtn">📘 Ver tutorial</button>
       </div>
     </section>
+
+    <!-- FEEDBACK -->
+    <section id="feedback" class="tab-content" style="display:none;">
+      <div class="card">
+        <h3>Envie seu feedback</h3>
+        <textarea id="feedbackText" rows="4" style="width:100%;" placeholder="Escreva sua sugestão..."></textarea>
+        <br><button id="sendFeedback" class="primary small">Enviar</button>
+        <div id="feedbackResult" class="muted" style="margin-top:8px;"></div>
+      </div>
+    </section>
   </div>
 
-  <footer>
-    <p>© 2025 V Estudos — Cronograma Inteligente</p>
-  </footer>
+  <footer><p>© 2025 V Estudos — Cronograma Inteligente</p></footer>
 
-  <!-- MODAL DE GERENCIAMENTO DE PASTAS -->
+  <!-- MODAL: Pastas -->
   <div id="modalPastas" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:999; align-items:center; justify-content:center;">
     <div style="background:rgba(28,28,28,.96); border:1px solid #2b2b2b; border-radius:12px; padding:14px; width:min(520px, 92%);">
       <h3 id="modalTitulo" style="margin:0 0 6px;">Gerenciar Pastas</h3>
       <p class="muted" id="modalHint" style="margin:0 0 12px;">Digite o nome e confirme.</p>
-
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-        <select id="modalSelect" style="flex:1; min-width:160px; display:none; border-radius:8px; border:1px solid #2b2b2b; background:#171717; color:#e8eef6; padding:10px;"></select>
-        <input id="modalInput" placeholder="Nome da pasta" style="flex:2; min-width:220px; border-radius:8px; border:1px solid #2b2b2b; background:#171717; color:#e8eef6; padding:10px;">
+        <select id="modalSelect" style="flex:1; min-width:160px; display:none;"></select>
+        <input id="modalInput" placeholder="Nome da pasta" style="flex:2; min-width:220px;">
       </div>
-
       <div class="muted" id="modalObs" style="font-size:12px;"></div>
-
       <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
         <button class="small" id="modalCancelar">Cancelar</button>
         <button class="small primary" id="modalConfirmar">Confirmar</button>
@@ -263,9 +154,35 @@
     </div>
   </div>
 
+  <!-- MODAL: Tema/Atividade -->
+  <div id="modalTema" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:rgba(28,28,28,.96); border:1px solid #2b2b2b; border-radius:12px; padding:14px; width:min(620px, 94%);">
+      <h3 id="temaTitulo" style="margin:0 0 6px;">Novo Tema</h3>
+      <p class="muted" id="temaHint" style="margin:0 0 10px;">Preencha os dados da atividade.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div><label class="muted" style="font-size:12px;">Pasta</label><select id="temaPasta" style="width:100%;"></select></div>
+        <div><label class="muted" style="font-size:12px;">Tema</label><input id="temaNome" placeholder="Ex.: Osteossarcoma" style="width:100%;"></div>
+        <div><label class="muted" style="font-size:12px;">Tipo de atividade</label>
+          <select id="temaTipo" style="width:100%;"><option>Aula</option><option>Questões</option><option>Aula + Questões</option><option>Revisão Passiva</option><option>Revisão Ativa</option></select></div>
+        <div><label class="muted" style="font-size:12px;">Acertos/Erros</label><input id="temaAE" placeholder="Ex.: 8/10" style="width:100%;"></div>
+        <div><label class="muted" style="font-size:12px;">Dificuldade</label><select id="temaDiff" style="width:100%;"><option>Média</option><option>Fácil</option><option>Alta</option></select></div>
+        <div><label class="muted" style="font-size:12px;">Status</label><select id="temaStatus" style="width:100%;"><option>Concluído</option><option>Pendente</option></select></div>
+        <div style="grid-column:1/-1;"><label class="muted" style="font-size:12px;">Comentário</label><textarea id="temaObs" rows="3" placeholder="Observações..." style="width:100%;"></textarea></div>
+      </div>
+      <div class="muted" id="temaInfo" style="font-size:12px; margin-top:8px;"></div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+        <button class="small" id="temaCancelar">Cancelar</button>
+        <button class="small primary" id="temaSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="app.js"></script>
-<script src="pastaManager.js"></script>
-<script src="statsManager.js"></script>
+  <script src="pastaManager.js"></script>
+  <script src="statsManager.js"></script>
+  <script src="themeManager.js"></script>
+  <script src="userConfig.js"></script>
+  <script src="scheduler.js"></script>
 </body>
 </html>
-
