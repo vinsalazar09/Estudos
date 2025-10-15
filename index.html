@@ -4,12 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Plataforma de Estudos Inteligente</title>
-  <link rel="stylesheet" href="style.css?v=555" />
+  <link rel="stylesheet" href="style.css?v=560" />
 </head>
 <body>
 <header class="top">
-  <h1>📘 Plataforma de Estudos Inteligente</h1>
-  <p class="muted">Estudo direcionado e organizado — pronto para qualquer prova.</p>
+  <div class="row between center wrap">
+    <div>
+      <h1>📘 Plataforma de Estudos Inteligente</h1>
+      <p class="muted">Estudo direcionado e organizado — pronto para qualquer prova.</p>
+    </div>
+    <div class="row gap">
+      <button id="themeToggle" class="btn ghost" title="Alternar estilo visual">🎨 Estilo: <span id="themeLabel">Minimalista</span></button>
+    </div>
+  </div>
+
   <div class="top-actions">
     <button id="btnPlan" class="btn primary">🪄 Gerar plano de hoje</button>
     <button class="btn tab active" data-tab="hoje">Hoje</button>
@@ -32,19 +40,17 @@
           <input id="topicsPerDay" type="number" min="1" step="1" value="2">
         </label>
         <label>Mostrar concluídos
-          <select id="showDone">
-            <option>Não</option><option>Sim</option>
-          </select>
+          <select id="showDone"><option>Não</option><option>Sim</option></select>
         </label>
         <div class="row gap end">
           <button id="genToday" class="btn">Gerar plano de hoje</button>
-          <button id="clearToday" class="btn secondary">Limpar seleção de hoje</button>
+          <button id="clearToday" class="btn secondary">Limpar seleção</button>
         </div>
       </div>
       <div class="chips row wrap gap">
         <span class="chip" id="kpiTopics">Temas: 0</span>
         <span class="chip" id="kpiDone">Concluídos: 0</span>
-        <span class="chip" id="kpiProg">Progresso: 0%</span>
+        <span class="chip" id="kpiProg">Progresso do dia: 0%</span>
         <span class="chip" id="kpiDays">Dias até a prova: -</span>
       </div>
     </div>
@@ -101,18 +107,19 @@
     <div class="card">
       <h2>Temas cadastrados</h2>
       <div class="row wrap gap">
-        <button id="exportJson" class="btn ghost">Exportar JSON</button>
-        <label class="btn ghost">Importar JSON
-          <input id="importJson" type="file" accept="application/json" hidden>
+        <button id="backupExport" class="btn ghost">📦 Fazer backup</button>
+        <label class="btn ghost">📥 Restaurar backup
+          <input id="backupImport" type="file" accept="application/json" hidden>
         </label>
+        <span class="muted">Use para migrar seus dados entre dispositivos.</span>
       </div>
       <table class="table" style="margin-top:1rem">
         <thead>
           <tr>
-            <th>Tema</th><th>Área</th><th>Prio</th><th>Dif.</th><th>Status</th><th>Progresso</th><th>Último</th><th>Ações</th>
+            <th>Tema</th><th>Área</th><th>Prio</th><th>Dif.</th><th>Aula vista?</th><th>Rendimento</th><th>Progresso</th><th>Último</th><th>Ações</th>
           </tr>
         </thead>
-        <tbody id="themesBody"><tr><td colspan="8">Nenhum tema cadastrado.</td></tr></tbody>
+        <tbody id="themesBody"><tr><td colspan="9">Nenhum tema cadastrado.</td></tr></tbody>
       </table>
     </div>
 
@@ -121,11 +128,8 @@
       <div class="grid4">
         <input id="newThemeName" type="text" placeholder="Ex: Fasceíte plantar">
         <select id="newPriority">
-          <option value="5">Prioridade 5 (alta)</option>
-          <option value="4">Prioridade 4</option>
-          <option value="3" selected>Prioridade 3</option>
-          <option value="2">Prioridade 2</option>
-          <option value="1">Prioridade 1 (baixa)</option>
+          <option value="5">Prioridade 5 (alta)</option><option value="4">4</option>
+          <option value="3" selected>3</option><option value="2">2</option><option value="1">1 (baixa)</option>
         </select>
         <select id="newDifficulty">
           <option value="alta">Dificuldade alta</option>
@@ -134,18 +138,28 @@
         </select>
         <select id="attachArea"></select>
       </div>
-      <input id="newComment" type="text" placeholder="Comentário (opcional)" style="margin:.5rem 0">
-      <div class="row gap">
+      <div class="grid4" style="margin-top:.5rem">
+        <select id="seenClass">
+          <option value="nao">Aula vista? Não</option>
+          <option value="sim">Aula vista? Sim</option>
+        </select>
+        <select id="initialYield">
+          <option value="ruim">Rendimento inicial: Ruim</option>
+          <option value="medio" selected>Rendimento inicial: Médio</option>
+          <option value="bom">Rendimento inicial: Bom</option>
+        </select>
+        <input id="initialScore" type="number" min="0" max="100" placeholder="% acertos (opcional)">
+        <input id="newComment" type="text" placeholder="Comentário (opcional)">
+      </div>
+      <div class="row gap" style="margin-top:.5rem">
         <button id="addTheme" class="btn">Adicionar tema</button>
         <button id="bulkToggle" class="btn ghost">Adicionar em massa</button>
       </div>
 
       <div id="bulkWrap" class="hidden" style="margin-top:.6rem">
-        <p class="muted">Cole uma lista (um por linha). Formatos aceitos:<br>
-          <code>Tema</code> • <code>Tema | prio=5 | dif=alta</code></p>
-        <textarea id="bulkText" rows="6" placeholder="Exemplo:
-Fasceíte plantar | prio=5 | dif=alta
-Deformidade de Haglund | prio=4 | dif=média"></textarea>
+        <p class="muted">Cole uma lista (um por linha). Exemplos:<br>
+          <code>Tema</code> • <code>Tema | prio=5 | dif=alta | aula=sim | rend=medio | score=70</code></p>
+        <textarea id="bulkText" rows="6" placeholder="Fasceíte plantar | prio=5 | dif=alta | aula=sim | rend=medio"></textarea>
         <div class="row gap">
           <select id="bulkArea"></select>
           <button id="bulkAdd" class="btn">Adicionar lista</button>
@@ -171,6 +185,6 @@ Deformidade de Haglund | prio=4 | dif=média"></textarea>
 
 <footer class="foot">Projeto Plataforma de Estudos © 2025</footer>
 
-<script src="app.js?v=555"></script>
+<script src="app.js?v=560"></script>
 </body>
 </html>
