@@ -1,166 +1,99 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Plataforma de Estudos Inteligente</title>
-<style>
-  :root{
-    --bg:#0f1115; --card:#171a21; --panel:#141821; --text:#e6e6e6; --muted:#9aa4af;
-    --border:#2a2f3a; --accent:#4da3ff; --accent-2:#28d09a; --success:#28d09a33;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  .container{max-width:1120px;margin:0 auto;padding:1.25rem}
-  header{text-align:center;padding:1.25rem 1rem 0.5rem;border-bottom:1px solid var(--border)}
-  header h1{margin:.2rem 0}
-  header p{color:var(--muted);margin:.2rem 0}
-  .top-cta{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin:.75rem auto 1rem}
-  .btn{background:var(--accent);color:#0c1018;border:none;border-radius:999px;padding:.7rem 1rem;font-weight:700;cursor:pointer;transition:all .15s}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 0 12px var(--accent)}
-  .btn.secondary{background:#273043;color:var(--text)}
-  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-  .chip{border:1px solid var(--border);background:#1a2030;color:var(--text);padding:.5rem .85rem;border-radius:999px}
-  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin:1.1rem 0}
-  .flash-save{animation:flashSave .4s ease-in-out}
-  @keyframes flashSave{0%{background:var(--success);}100%{background:var(--panel);}}
-  .flex-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
-  .box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
-  input[type="number"],input[type="text"],textarea{width:100%;padding:.6rem;border:1px solid var(--border);border-radius:10px;background:#0f131c;color:var(--text)}
-  .timer{font-size:1.4rem;margin:.25rem 0}
-  .progress{background:#1e2430;border:1px solid var(--border);height:10px;border-radius:999px;overflow:hidden}
-  .progress-bar{background:linear-gradient(90deg,var(--accent),var(--accent-2));height:100%;transition:width .2s}
-  .muted{color:var(--muted)}
-  .footer{border-top:1px solid var(--border);text-align:center;color:var(--muted);padding:1rem 0}
-  .tabs{display:flex;gap:.5rem;justify-content:center;margin:.5rem auto 0}
-  .tab{background:#1a2030;border:1px solid var(--border);color:var(--text);padding:.5rem .8rem;border-radius:999px;cursor:pointer;transition:all .15s}
-  .tab:hover{border-color:var(--accent)}
-  .tab.active{border-color:var(--accent);background:#162030}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-  .card{display:block;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-decoration:none;color:var(--text);transition:transform .12s ease,border .12s ease}
-  .card:hover{transform:translateY(-2px);border-color:var(--accent)}
-  table{width:100%;border-collapse:collapse;background:#0f131c;border:1px solid var(--border);border-radius:12px;overflow:hidden}
-  th,td{padding:.6rem .75rem;border-bottom:1px solid var(--border)}
-  thead th{background:#101523;text-align:left;color:#cfd8e3}
-  tbody tr:hover{background:#121829}
-  .h-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
-  .h-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
-  .h-card h3{margin:.2rem 0 .5rem 0}
-  .h-row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
-  .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#1c2230;border:1px solid var(--border);font-size:.75rem;color:#c8d1dd}
-  .collapse-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:.6rem .8rem;border-radius:10px;border:1px solid var(--border);background:#0f131c}
-  .collapse-body{display:none;margin-top:.75rem}
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem}
-  .modal{max-width:760px;width:100%;background:#0f131c;border:1px solid var(--border);border-radius:14px;padding:1rem}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma de Estudos Inteligente</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<header class="container">
-  <h1>📘 Plataforma de Estudos Inteligente</h1>
-  <p>Foco: estudo direcionado e preparação organizada para o TEOT.</p>
-
-  <div class="top-cta">
-    <button id="generatePlan" class="btn">🪄 Gerar Atividade</button>
-    <span class="chip" id="chipGoal"></span>
-    <span class="chip" id="chipToday"></span>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="home">Início</button>
-    <button class="tab" data-tab="hierarquia">Hierarquia</button>
-  </div>
-</header>
-
-<main class="container">
-  <section class="panel" data-page="home">
-    <h2>🎯 Planejamento do Dia</h2>
-    <div class="flex-row">
-      <div class="box">
-        <h3>Meta diária</h3>
-        <form id="dailyGoalForm">
-          <label for="dailyGoal">Minutos de estudo:</label>
-          <input type="number" id="dailyGoal" min="5" step="5" placeholder="60" />
-          <button type="submit" class="btn" style="margin-top:.5rem">Salvar meta</button>
-        </form>
-        <div id="goalStatus" class="status muted" style="margin-top:.35rem"></div>
-      </div>
-      <div class="box">
-        <h3>📈 Progresso (do dia)</h3>
-        <div class="progress"><div id="progressBar" class="progress-bar" style="width:0%"></div></div>
-        <div id="progressText" class="muted">0 / 0 min</div>
-        <button id="addQuick15" class="btn" style="margin-top:.5rem">+15 min rápido</button>
-      </div>
+  <header>
+    <h1>📘 Plataforma de Estudos Inteligente</h1>
+    <p>Foco: estudo direcionado e organizado para sua preparação.</p>
+    <div class="h-row" style="margin-top:1rem;gap:.75rem">
+      <button id="generatePlan" class="btn primary">🪄 Gerar Atividade</button>
+      <button class="btn" data-tab="home">Início</button>
+      <button class="btn" data-tab="hierarquia">Hierarquia</button>
     </div>
-  </section>
+  </header>
 
-  <section class="panel" data-page="home">
-    <div class="collapse-head" data-collapse="timer">
-      <strong>⏱️ Cronômetro (opcional)</strong>
-      <span class="muted">clicar para mostrar/ocultar</span>
-    </div>
-    <div class="collapse-body" id="timerWrap">
-      <div class="box" style="margin-top:.75rem">
-        <div id="timerDisplay" class="timer">00:00:00</div>
-        <div class="btn-row">
-          <button id="startTimer" class="btn">Iniciar</button>
-          <button id="stopTimer" class="btn secondary">Parar</button>
-          <button id="resetTimer" class="btn ghost">Zerar</button>
+  <main>
+    <!-- ======== ABA INÍCIO ======== -->
+    <section id="home" class="tab-content">
+      <h2>🎯 Planejamento do Dia</h2>
+
+      <div class="panel">
+        <div class="h-row" style="align-items:flex-start;gap:1rem;flex-wrap:wrap">
+          <div style="flex:1">
+            <h3>Meta diária</h3>
+            <input type="number" id="goalInput" placeholder="Minutos de estudo" min="10" step="5" value="60">
+            <button id="saveGoal" class="btn">Salvar meta</button>
+          </div>
+
+          <div style="flex:1">
+            <h3>Progresso (do dia)</h3>
+            <div class="progress-wrap">
+              <div id="progressBar" class="progress"></div>
+            </div>
+            <p id="progressLabel" style="margin-top:.3rem">0 / 0 min</p>
+            <button id="addQuick15" class="btn small">+15 min rápido</button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <section class="panel" data-page="home">
-    <h2>🗒️ Notas Rápidas</h2>
-    <textarea id="quickNotes" rows="5" placeholder="Digite suas anotações..."></textarea>
-    <div class="btn-row">
-      <button id="saveNotes" class="btn">Salvar</button>
-      <button id="clearNotes" class="btn secondary">Limpar</button>
-    </div>
-    <small class="muted">Tudo é salvo localmente neste dispositivo.</small>
-  </section>
-
-  <section class="panel" data-page="home">
-    <h2>📅 Hoje em Foco</h2>
-    <p class="muted">Resumo automático do seu dia de estudo.</p>
-    <table>
-      <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
-      <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
-    </table>
-  </section>
-
-  <section class="panel" data-page="hierarquia" style="display:none">
-    <h2>🧭 Áreas & Subtemas</h2>
-    <div class="h-grid">
-      <div class="h-card">
-        <h3>Nova Área</h3>
-        <input type="text" id="areaName" placeholder="Ex.: Ombro, Trauma Infantil" />
-        <div class="h-row"><button class="btn" id="addArea">Criar Área</button></div>
-        <small class="muted">Crie a área e depois adicione subtemas dentro dela.</small>
+      <div class="panel collapsible">
+        <h3>⏱️ Cronômetro <small class="muted">(opcional)</small></h3>
+        <div id="timerWrap" style="display:none;margin-top:.75rem">
+          <p id="timerDisplay">00:00:00</p>
+          <div class="btn-row">
+            <button id="startTimer" class="btn">Iniciar</button>
+            <button id="stopTimer" class="btn secondary">Parar</button>
+            <button id="resetTimer" class="btn ghost">Zerar</button>
+          </div>
+        </div>
+        <button class="btn ghost small" data-collapse="timer">clicar para mostrar/ocultar</button>
       </div>
-      <div class="h-card">
-        <h3>Resumo</h3>
-        <div><span class="badge" id="areasCount">0 áreas</span> • <span class="badge" id="subCount">0 subtemas</span></div>
-        <p class="muted" style="margin-top:.5rem;">A média dos subtemas define o progresso da área.</p>
+
+      <div class="panel">
+        <h3>📝 Notas Rápidas</h3>
+        <textarea id="quickNotes" rows="5" placeholder="Digite suas anotações..."></textarea>
+        <div class="btn-row" style="margin-top:.5rem">
+          <button id="saveNotes" class="btn">Salvar</button>
+          <button id="clearNotes" class="btn secondary">Limpar</button>
+        </div>
+        <small class="muted">Tudo é salvo localmente neste dispositivo.</small>
       </div>
-    </div>
-  </section>
 
-  <section class="panel" data-page="hierarquia" style="display:none">
-    <h2>Minhas Áreas</h2>
-    <div id="areasList"></div>
-  </section>
-</main>
+      <div class="panel">
+        <h3>📅 Hoje em Foco</h3>
+        <p class="muted">Resumo automático do seu dia de estudo.</p>
+        <table class="log-table">
+          <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
 
-<footer class="container footer">
-  <p>Estudos • Plataforma de Estudos Inteligente • © 2025</p>
-</footer>
+    <!-- ======== ABA HIERARQUIA ======== -->
+    <section id="hierarquia" class="tab-content" style="display:none">
+      <h2>📂 Áreas e Subtemas</h2>
+      <p class="muted">Crie e organize suas áreas e subtemas conforme desejar.</p>
 
-<script>
-// === JavaScript principal (Claude refinado + original ChatGPT) ===
-// [todo o trecho JS fornecido pelo Claude entra aqui — já incluso no seu código acima]
-</script>
+      <div class="panel" style="margin-top:1rem">
+        <div class="h-row" style="align-items:center;gap:.5rem">
+          <input type="text" id="areaName" placeholder="Nova área (ex: Ombro)" style="flex:1">
+          <button id="addArea" class="btn">Adicionar Área</button>
+        </div>
+        <div id="areasList" style="margin-top:1rem"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p class="muted">Desenvolvido por Vinícius R. V. Salazar — Projeto Plataforma de Estudos © 2025</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
-
-<!-- QA checklist e instruções finais incluídos -->
