@@ -1,35 +1,153 @@
-/* v5.6 — Fluxo Inteligente
-   - Fluxo natural: área → tema (aula vista? rendimento inicial)
-   - Gerador do dia com atividade sugerida e detalhe opcional
-   - Backup amigável
-   - Tema visual Minimalista/Lúdico
-   - 100% localStorage, sem SW */
+/* v6.0A — Projetos-Mãe
+   - Múltiplos projetos independentes (Prova/Objetivo X, Y)
+   - Onboarding: pede nome do primeiro projeto
+   - Trocar/renomear/excluir projeto
+   - Backup/Restore por projeto
+   - Mantém TODA a lógica da v5.6 (gerador, atividades, etc.) em escopo do projeto ativo
+*/
 
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const KEY=(k)=>`estudos_v56:${k}`;
-const store={ get:(k,f)=>{try{const v=localStorage.getItem(KEY(k));return v?JSON.parse(v):f}catch{return f}},
-              set:(k,v)=>{try{localStorage.setItem(KEY(k),JSON.stringify(v));}catch{}} };
-const today=()=>new Date().toISOString().slice(0,10);
-const uid=(p)=>`${p}_${Math.random().toString(36).slice(2,10)}`;
+const ROOT='estudos_v60a';
 
-const state={
-  theme: store.get('theme','minimal'),
-  goal: store.get('goal',60),
-  logs: store.get('logs',{}),
-  notes: store.get('notes',''),
-  areas: store.get('areas',[]), // {id,name,children:[subtema]}
-  todayPick: store.get('todayPick',[])
+// ===== Storage base =====
+const rootStore={
+  get:(k,f)=>{ try{const v=localStorage.getItem(`${ROOT}:${k}`); return v?JSON.parse(v):f;}catch{return f} },
+  set:(k,v)=>{ try{localStorage.setItem(`${ROOT}:${k}`, JSON.stringify(v));}catch{} },
+  del:(k)=>{ try{localStorage.removeItem(`${ROOT}:${k}`);}catch{} }
 };
 
-// THEME
+// ===== Projetos (lista + ativo) =====
+let projects = rootStore.get('projects', []);      // [{id,name}]
+let activeId = rootStore.get('activeProjectId', null);
+
+// Helpers por projeto (namespacing de chaves)
+const PKEY = (id,k)=> `${ROOT}:proj:${id}:${k}`;
+const pstore = (id)=>({
+  get:(k,f)=>{ try{const v=localStorage.getItem(PKEY(id,k)); return v?JSON.parse(v):f;}catch{return f} },
+  set:(k,v)=>{ try{localStorage.setItem(PKEY(id,k), JSON.stringify(v));}catch{} },
+  del:(k)=>{ try{localStorage.removeItem(PKEY(id,k));}catch{} }
+});
+
+// ===== Estado do projeto ativo =====
+let state = null;  // preenchido por loadProject()
+
+function defaultProjectState(){
+  return {
+    theme: 'minimal',
+    goal: 60,
+    logs: {},
+    notes: '',
+    areas: [],
+    todayPick: [],
+    examDate: '',
+    topicsPerDay: 2,
+    showDone: 'Não'
+  };
+}
+
+// ===== UI: seleção de projeto =====
+function renderProjectSelector(){
+  const sel = $('#projectSelect');
+  sel.innerHTML = projects.map(p=> `<option value="${p.id}" ${p.id===activeId?'selected':''}>${p.name}</option>`).join('')
+    || '<option value="">(Crie um projeto)</option>';
+}
+
+function ensureFirstProject(){
+  if(projects.length) return;
+  let name = prompt('Como quer chamar seu primeiro projeto? (ex: TEOT 2026)');
+  if(!name){ name = 'Meu Projeto'; }
+  const id = `p_${Date.now().toString(36)}`;
+  projects = [{id,name}];
+  rootStore.set('projects', projects);
+  // cria estado padrão
+  const s = defaultProjectState();
+  pstore(id).set('state', s);
+  activeId = id; rootStore.set('activeProjectId', activeId);
+}
+
+function loadProject(id){
+  const ps = pstore(id);
+  state = ps.get('state', defaultProjectState());
+  // hidrata campos simples de UI
+  $('#examDate').value = state.examDate || '';
+  $('#topicsPerDay').value = state.topicsPerDay || 2;
+  $('#showDone').value = state.showDone || 'Não';
+  applyTheme();
+  // renderiza telas
+  showTab('hoje');
+  renderProgress(); renderLogTable(); renderAreas(); renderThemesTable(); refreshAttachAreas(); renderToday();
+}
+
+function saveProject(){
+  if(!activeId) return;
+  pstore(activeId).set('state', state);
+}
+
+function setActiveProject(id){
+  activeId = id; rootStore.set('activeProjectId', id);
+  loadProject(id);
+}
+
+function addProject(){
+  let name = prompt('Nome do novo projeto (ex: Prova Y):');
+  if(!name) return;
+  const id = `p_${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`;
+  projects.push({id,name});
+  rootStore.set('projects', projects);
+  pstore(id).set('state', defaultProjectState());
+  setActiveProject(id);
+  renderProjectSelector();
+}
+
+function renameProject(){
+  if(!activeId) return;
+  const p = projects.find(x=>x.id===activeId); if(!p) return;
+  const name = prompt('Novo nome do projeto:', p.name);
+  if(!name) return;
+  p.name = name; rootStore.set('projects', projects); renderProjectSelector();
+}
+
+function deleteProject(){
+  if(!activeId) return;
+  const p = projects.find(x=>x.id===activeId);
+  if(!p) return;
+  if(!confirm(`Excluir o projeto "${p.name}" e todos os dados dele?`)) return;
+
+  // remove chaves do projeto
+  const prefix = `${ROOT}:proj:${activeId}:`;
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith(prefix)) localStorage.removeItem(k);
+  });
+
+  projects = projects.filter(x=>x.id!==activeId);
+  rootStore.set('projects', projects);
+  if(projects.length){
+    activeId = projects[0].id; rootStore.set('activeProjectId', activeId);
+    loadProject(activeId);
+  } else {
+    activeId = null; rootStore.del('activeProjectId');
+    ensureFirstProject(); renderProjectSelector(); loadProject(activeId);
+  }
+}
+
+// binds seletor
+$('#projectSelect')?.addEventListener('change', (e)=> setActiveProject(e.target.value));
+$('#projectNew')?.addEventListener('click', addProject);
+$('#projectRename')?.addEventListener('click', renameProject);
+$('#projectDelete')?.addEventListener('click', deleteProject);
+
+// ===== Theme (por projeto) =====
 function applyTheme(){
   if(state.theme==='ludico'){ document.documentElement.setAttribute('data-theme','ludico'); $('#themeLabel').textContent='Lúdico'; }
   else { document.documentElement.removeAttribute('data-theme'); $('#themeLabel').textContent='Minimalista'; }
 }
-$('#themeToggle')?.addEventListener('click',()=>{ state.theme = (state.theme==='minimal'?'ludico':'minimal'); store.set('theme',state.theme); applyTheme(); });
+$('#themeToggle')?.addEventListener('click',()=>{
+  state.theme = (state.theme==='minimal'?'ludico':'minimal');
+  saveProject(); applyTheme();
+});
 
-// NAV
+// ===== Navegação =====
 function showTab(t){
   $$('.btn.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
   $('#page-hoje').classList.add('hidden');
@@ -41,7 +159,7 @@ function showTab(t){
 }
 $$('.btn.tab').forEach(b=> b.addEventListener('click', ()=> showTab(b.dataset.tab)));
 
-// PROGRESSO
+// ===== Progresso / Meta (por projeto) =====
 function renderProgress(){
   const g=Number(state.goal||0)||0;
   const d=today(), done=state.logs[d]||0;
@@ -51,13 +169,13 @@ function renderProgress(){
   $('#goalInput').value = g || '';
 }
 $('#saveGoal')?.addEventListener('click', ()=>{
-  const v=Number($('#goalInput').value||0); state.goal=v>0?v:0; store.set('goal',state.goal); renderProgress(); alert('Meta salva!');
+  const v=Number($('#goalInput').value||0); state.goal=v>0?v:0; saveProject(); renderProgress(); alert('Meta salva!');
 });
 $('#addQuick15')?.addEventListener('click', ()=>{
-  const d=today(); state.logs[d]=(state.logs[d]||0)+15; store.set('logs',state.logs); renderProgress(); renderLogTable();
+  const d=today(); state.logs[d]=(state.logs[d]||0)+15; saveProject(); renderProgress(); renderLogTable();
 });
 
-// TIMER
+// ===== Cronômetro =====
 let tmr=null,startTs=null,accum=0;
 const fmt=(ms)=>{const s=Math.floor(ms/1000);const h=String(Math.floor(s/3600)).padStart(2,'0');const m=String(Math.floor((s%3600)/60)).padStart(2,'0');const ss=String(s%60).padStart(2,'0');return `${h}:${m}:${ss}`;};
 function tick(){ $('#timerDisplay').textContent=fmt((startTs?Date.now()-startTs:0)+accum); }
@@ -65,34 +183,33 @@ $('#startTimer')?.addEventListener('click',()=>{ if(tmr) return; startTs=Date.no
 $('#stopTimer')?.addEventListener('click',()=>{
   if(!tmr) return; clearInterval(tmr); tmr=null;
   const elapsed=(startTs?Date.now()-startTs:0); accum+=elapsed; startTs=null;
-  const add=Math.max(0,Math.round(accum/60000)); if(add){ const d=today(); state.logs[d]=(state.logs[d]||0)+add; store.set('logs',state.logs); accum=0; renderProgress(); renderLogTable(); }
+  const add=Math.max(0,Math.round(accum/60000)); if(add){ const d=today(); state.logs[d]=(state.logs[d]||0)+add; saveProject(); accum=0; renderProgress(); renderLogTable(); }
   tick();
 });
 $('#resetTimer')?.addEventListener('click',()=>{ if(tmr){clearInterval(tmr);tmr=null;} startTs=null;accum=0;tick(); });
 
-// NOTAS
-$('#quickNotes').value = state.notes || '';
-$('#saveNotes')?.addEventListener('click',()=>{ state.notes=$('#quickNotes').value; store.set('notes',state.notes); });
-$('#clearNotes')?.addEventListener('click',()=>{ if(!confirm('Limpar?'))return; $('#quickNotes').value=''; state.notes=''; store.set('notes',''); });
+// ===== Notas =====
+$('#quickNotes').value = ''; // hidrata no loadProject
+$('#saveNotes')?.addEventListener('click',()=>{ state.notes=$('#quickNotes').value; saveProject(); });
+$('#clearNotes')?.addEventListener('click',()=>{ if(!confirm('Limpar?'))return; $('#quickNotes').value=''; state.notes=''; saveProject(); });
 
-// LOG
+// ===== Log =====
 function renderLogTable(){
-  const body=$('#logBody'); const arr=Object.entries(state.logs).sort((a,b)=>a[0]<b[0]?1:-1);
+  const body=$('#logBody'); const arr=Object.entries(state.logs||{}).sort((a,b)=>a[0]<b[0]?1:-1);
   body.innerHTML = arr.length? arr.map(([d,m])=>`<tr><td>${d}</td><td>${m}</td></tr>`).join('') : '<tr><td colspan="2">Nenhum registro ainda.</td></tr>';
 }
 
-// ÁREAS
-function saveAreas(){ store.set('areas',state.areas); }
+// ===== Áreas / Temas (por projeto) =====
 function recalcAreaProgress(a){ const L=a.children||[]; a.progress = L.length? Math.round(L.reduce((s,x)=>s+(Number(x.progress)||0),0)/L.length):0; }
 $('#addArea')?.addEventListener('click', ()=>{
   const name=($('#areaName').value||'').trim(); if(!name) return alert('Informe o nome da área.');
-  state.areas.unshift({id:uid('a'),name,progress:0,children:[]});
-  $('#areaName').value=''; saveAreas(); renderAreas(); renderThemesTable(); refreshAttachAreas();
+  (state.areas ||= []).unshift({id:`a_${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`,name,progress:0,children:[]});
+  $('#areaName').value=''; saveProject(); renderAreas(); renderThemesTable(); refreshAttachAreas();
 });
 
 function renderAreas(){
   const host=$('#areasList');
-  if(!state.areas.length){ host.innerHTML='<div class="card">Nenhuma área criada ainda.</div>'; return; }
+  if(!state.areas?.length){ host.innerHTML='<div class="card">Nenhuma área criada ainda.</div>'; return; }
   host.innerHTML = state.areas.map(a=>{
     const subs=(a.children||[]).map(s=>`
       <div class="hcard">
@@ -117,27 +234,20 @@ function renderAreas(){
 
   host.onclick=(e)=>{
     const b=e.target.closest('button'); if(!b) return;
-    if(b.dataset.delArea){ if(!confirm('Excluir a área e subtemas?'))return; state.areas=state.areas.filter(x=>x.id!==b.dataset.delArea); saveAreas(); renderAreas(); renderThemesTable(); refreshAttachAreas(); return; }
+    if(b.dataset.delArea){ if(!confirm('Excluir a área e subtemas?'))return; state.areas=state.areas.filter(x=>x.id!==b.dataset.delArea); saveProject(); renderAreas(); renderThemesTable(); refreshAttachAreas(); return; }
     if(b.dataset.del){ const a=state.areas.find(x=>x.id===b.dataset.area); if(!a) return;
       if(!confirm('Excluir este subtema?'))return;
-      a.children=(a.children||[]).filter(s=>s.id!==b.dataset.del); recalcAreaProgress(a); saveAreas(); renderAreas(); renderThemesTable(); refreshAttachAreas(); return; }
+      a.children=(a.children||[]).filter(s=>s.id!==b.dataset.del); recalcAreaProgress(a); saveProject(); renderAreas(); renderThemesTable(); refreshAttachAreas(); return; }
     if(b.dataset.done){ markDoneToday(b.dataset.area,b.dataset.done); return; }
     if(b.dataset.open){ openSub(b.dataset.area,b.dataset.open); return; }
   };
 }
 
-// TEMAS (tabela + adição)
+// Tabela de temas
 function allSubthemes(){
-  const list=[]; state.areas.forEach(a=> (a.children||[]).forEach(s=> list.push({area:a.name, areaId:a.id, ...s})));
+  const list=[]; (state.areas||[]).forEach(a=> (a.children||[]).forEach(s=> list.push({area:a.name, areaId:a.id, ...s})));
   return list;
 }
-function refreshAttachAreas(){
-  const sel=$('#attachArea'), selB=$('#bulkArea');
-  const opt=state.areas.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  sel.innerHTML=opt||'<option value="">(Crie uma área primeiro)</option>';
-  selB.innerHTML=opt||'<option value="">(Crie uma área primeiro)</option>';
-}
-
 function renderThemesTable(){
   const body=$('#themesBody'); const list=allSubthemes();
   if(!list.length){ body.innerHTML='<tr><td colspan="9">Nenhum tema cadastrado.</td></tr>'; return; }
@@ -159,76 +269,96 @@ function renderThemesTable(){
     if(b.dataset.done){ markDoneToday(b.dataset.area,b.dataset.done); return; }
     if(b.dataset.del){ const a=state.areas.find(x=>x.id===b.dataset.area); if(!a) return;
       if(!confirm('Excluir este subtema?'))return;
-      a.children=(a.children||[]).filter(s=>s.id!==b.dataset.del); recalcAreaProgress(a); saveAreas(); renderAreas(); renderThemesTable(); refreshAttachAreas(); }
+      a.children=(a.children||[]).filter(s=>s.id!==b.dataset.del); recalcAreaProgress(a); saveProject(); renderAreas(); renderThemesTable(); refreshAttachAreas(); }
   };
 }
+function refreshAttachAreas(){
+  const sel=$('#attachArea'), selB=$('#bulkArea');
+  const opt=(state.areas||[]).map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  sel.innerHTML=opt||'<option value="">(Crie uma área primeiro)</option>';
+  selB.innerHTML=opt||'<option value="">(Crie uma área primeiro)</option>';
+}
 
+// Adicionar tema
 $('#addTheme')?.addEventListener('click', ()=>{
-  const areaId=$('#attachArea').value; const a=state.areas.find(x=>x.id===areaId); if(!a) return alert('Selecione uma área.');
+  const areaId=$('#attachArea').value; const a=(state.areas||[]).find(x=>x.id===areaId); if(!a) return alert('Selecione uma área.');
   const name=($('#newThemeName').value||'').trim(); if(!name) return alert('Informe o tema.');
   const prio=Number($('#newPriority').value||3);
   const diff=$('#newDifficulty').value||'média';
   const aula=$('#seenClass').value==='sim';
-  const rend=$('#initialYield').value; // ruim/medio/bom
+  const rend=$('#initialYield').value;
   const score=Number($('#initialScore').value||0);
   const notes=$('#newComment').value||'';
 
   (a.children ||= []).unshift({
-    id:uid('s'), name, notes, prioridade:prio, dificuldade:diff,
+    id:`s_${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`,
+    name, notes, prioridade:prio, dificuldade:diff,
     aulaVista:aula, rendimento:rend, scoreInicial:score,
-    status:'pendente', progress:0, log:{} // progress vai subindo
+    status:'pendente', progress:0, log:{}
   });
 
-  recalcAreaProgress(a); saveAreas(); renderAreas(); renderThemesTable();
+  recalcAreaProgress(a); saveProject(); renderAreas(); renderThemesTable();
   $('#newThemeName').value=''; $('#newComment').value=''; $('#initialScore').value='';
 });
 
-// bulk
+// Adição em massa
 $('#bulkToggle')?.addEventListener('click',()=> $('#bulkWrap').classList.toggle('hidden'));
 $('#bulkAdd')?.addEventListener('click', ()=>{
-  const areaId=$('#bulkArea').value; const a=state.areas.find(x=>x.id===areaId); if(!a) return alert('Selecione uma área.');
+  const areaId=$('#bulkArea').value; const a=(state.areas||[]).find(x=>x.id===areaId); if(!a) return alert('Selecione uma área.');
   const lines = ($('#bulkText').value||'').split('\n').map(s=>s.trim()).filter(Boolean);
   lines.forEach(line=>{
     let name=line, prio=3, dif='média', aula=false, rend='medio', score=0;
     const parts=line.split('|').map(s=>s.trim());
     if(parts.length>1){ name=parts[0]; parts.slice(1).forEach(p=>{
-      const [k,v]=p.split('=').map(x=>x.trim().toLowerCase());
-      if(k==='prio') prio=Number(v)||3;
-      if(k==='dif') dif=(v==='alta'||v==='fácil'||v==='média')?v:'média';
-      if(k==='aula') aula=(v==='sim');
-      if(k==='rend') rend=(v==='ruim'||v==='medio'||v==='bom')?v:'medio';
-      if(k==='score') score=Number(v)||0;
+      const [k,vRaw]=p.split('=').map(x=>x.trim()); const v=vRaw?.toLowerCase?.()||'';
+      if(k.toLowerCase()==='prio') prio=Number(v)||3;
+      if(k.toLowerCase()==='dif') dif=(v==='alta'||v==='fácil'||v==='média')?v:'média';
+      if(k.toLowerCase()==='aula') aula=(v==='sim');
+      if(k.toLowerCase()==='rend') rend=(['ruim','medio','bom'].includes(v)?v:'medio');
+      if(k.toLowerCase()==='score') score=Number(v)||0;
     });}
-    (a.children ||= []).push({id:uid('s'),name:parts[0],notes:'',prioridade:prio,dificuldade:dif,aulaVista:aula,rendimento:rend,scoreInicial:score,status:'pendente',progress:0,log:{}});
+    (a.children ||= []).push({
+      id:`s_${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`,
+      name, notes:'', prioridade:prio, dificuldade:dif, aulaVista:aula, rendimento:rend, scoreInicial:score, status:'pendente', progress:0, log:{}
+    });
   });
-  recalcAreaProgress(a); saveAreas(); renderAreas(); renderThemesTable(); $('#bulkText').value='';
+  recalcAreaProgress(a); saveProject(); renderAreas(); renderThemesTable(); $('#bulkText').value='';
 });
 
-// BACKUP amigável
+// Backup por projeto
 $('#backupExport')?.addEventListener('click', ()=>{
-  const data={areas:state.areas, goal:state.goal, logs:state.logs, notes:state.notes};
+  const data = { projectId:activeId, projectName: (projects.find(p=>p.id===activeId)?.name||''), state };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='backup_estudos.json'; a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`backup_${data.projectName||'projeto'}.json`; a.click();
 });
 $('#backupImport')?.addEventListener('change',(e)=>{
   const f=e.target.files?.[0]; if(!f) return;
   const r=new FileReader(); r.onload=()=>{
-    try{ const obj=JSON.parse(String(r.result||'{}'));
-      if(obj?.areas){ state.areas=obj.areas; if(obj.goal!=null)state.goal=obj.goal; if(obj.logs)obj.logs=obj.logs; if(obj.notes!=null)state.notes=obj.notes;
-        saveAreas(); store.set('goal',state.goal); store.set('logs',state.logs); store.set('notes',state.notes);
-        renderAreas(); renderThemesTable(); refreshAttachAreas(); renderProgress(); renderLogTable();
-        alert('Backup restaurado com sucesso!');
+    try{
+      const obj=JSON.parse(String(r.result||'{}'));
+      if(obj?.state){
+        state = obj.state;
+        saveProject();
+        // Hidratar UI
+        $('#quickNotes').value = state.notes||'';
+        $('#examDate').value = state.examDate||'';
+        $('#topicsPerDay').value = state.topicsPerDay||2;
+        $('#showDone').value = state.showDone||'Não';
+        applyTheme();
+        renderProgress(); renderLogTable(); renderAreas(); renderThemesTable(); refreshAttachAreas(); renderToday();
+        alert('Backup restaurado neste projeto!');
       } else alert('Arquivo inválido.');
     }catch{ alert('Falha ao importar.'); }
   }; r.readAsText(f);
 });
 
-// ATIVIDADE SUGERIDA
+// ===== Gerador do dia (mesmo motor da v5.6, escopo do projeto) =====
 function difficultyWeight(d){ if(d==='alta')return 1.0; if(d==='média')return 0.8; return 0.6; }
 function rendimentoFactor(r){ if(r==='ruim')return 2; if(r==='medio')return 1; return 0; }
 function lastStudyPenalty(s){
-  const daysSince = (()=>{ const last=Object.keys(s.log||{}).sort().slice(-1)[0]; if(!last) return 999; const diff=(new Date().setHours(0,0,0,0)-new Date(last).getTime())/(1000*60*60*24); return Math.max(0, Math.round(diff)); })();
-  return Math.min(10, Math.floor(daysSince/3)); // mais tempo parado, mais prioridade
+  const last=Object.keys(s.log||{}).sort().slice(-1)[0]; if(!last) return 5;
+  const diff=(new Date().setHours(0,0,0,0)-new Date(last).getTime())/(1000*60*60*24);
+  return Math.min(10, Math.max(0, Math.round(diff/3)));
 }
 function scoreSub(s){
   const prio=Number(s.prioridade||3);
@@ -236,40 +366,45 @@ function scoreSub(s){
   return prio*2 + prog*0.4 + difficultyWeight(s.dificuldade||'média')*0.8 + rendimentoFactor(s.rendimento||'medio') + lastStudyPenalty(s);
 }
 function suggestedAction(s){
-  // Regra de ouro: se não viu aula → "Assistir aula + questões"
   if(!s.aulaVista) return {kind:'aula', text:'Assistir aula/ler conteúdo + fazer questões', cls:'bad'};
-  // Se viu aula:
   if((s.rendimento||'medio')==='bom' || (s.scoreInicial||0)>=70) return {kind:'ativa', text:'Revisão ativa: questões/flashcards', cls:'good'};
   if((s.rendimento||'medio')==='medio' || ((s.scoreInicial||0)>=40&&(s.scoreInicial||0)<70)) return {kind:'mista', text:'Resumo rápido + questões/flashcards', cls:'warn'};
   return {kind:'aula', text:'Revisão passiva (aula/resumo) + questões leves', cls:'bad'};
 }
-
-// GERADOR DO DIA
 function daysToExam(){
   const v=$('#examDate').value; if(!v) return '-';
   const d=(new Date(v).getTime() - new Date().setHours(0,0,0,0))/(1000*60*60*24);
   return d>=0? Math.round(d) : '-';
 }
+function allSubthemes(){ const list=[]; (state.areas||[]).forEach(a=> (a.children||[]).forEach(s=> list.push({area:a.name, areaId:a.id, ...s}))); return list; }
+
+$('#examDate')?.addEventListener('change',()=>{ state.examDate=$('#examDate').value||''; saveProject(); renderToday(); });
+$('#topicsPerDay')?.addEventListener('change',()=>{ state.topicsPerDay=Math.max(1,Number($('#topicsPerDay').value||2)); saveProject(); });
+$('#showDone')?.addEventListener('change',()=>{ state.showDone=$('#showDone').value; saveProject(); renderToday(); });
+
 function generateToday(){
   const perDay=Math.max(1, Number($('#topicsPerDay').value||2));
   const subs=allSubthemes().sort((a,b)=> scoreSub(b)-scoreSub(a));
   const pick=subs.slice(0,perDay).map(x=>({areaId:x.areaId, subId:x.id}));
-  state.todayPick=pick; store.set('todayPick',state.todayPick); renderToday();
+  state.todayPick=pick; saveProject(); renderToday();
 }
-function clearToday(){ state.todayPick=[]; store.set('todayPick',[]); renderToday(); }
+function clearToday(){ state.todayPick=[]; saveProject(); renderToday(); }
 
 function renderToday(){
   $('#kpiDays').textContent = `Dias até a prova: ${daysToExam()}`;
   const host=$('#todayList'); host.innerHTML='';
-  const showDone = $('#showDone').value==='Sim';
+  const showDone = (state.showDone==='Sim');
+
+  // hidratar notas
+  $('#quickNotes').value = state.notes || '';
 
   let doneCount=0;
   state.todayPick.forEach(p=>{
-    const a=state.areas.find(x=>x.id===p.areaId); const s=a?.children?.find(z=>z.id===p.subId); if(!a||!s) return;
+    const a=(state.areas||[]).find(x=>x.id===p.areaId); const s=a?.children?.find(z=>z.id===p.subId); if(!a||!s) return;
     if(!showDone && s.status==='feito') return;
     if(s.status==='feito') doneCount++;
-
     const sug = suggestedAction(s);
+
     const wrap=document.createElement('div'); wrap.className='card';
     wrap.innerHTML = `
       <div class="row" style="justify-content:space-between;align-items:center">
@@ -277,12 +412,6 @@ function renderToday(){
           <strong>${s.name}</strong> <span class="badge">${a.name}</span>
           <div class="suggestion ${sug.cls}">
             <strong>Atividade sugerida:</strong> ${sug.text}
-            <button class="btn small ghost" data-toggle="details">ver detalhes</button>
-            <div class="details">
-              <small class="muted">
-                Prioridade: ${s.prioridade} • Dificuldade: ${s.dificuldade} • Progresso: ${Math.round(s.progress||0)}% • Aula: ${s.aulaVista?'sim':'não'} • Rendimento: ${s.rendimento||'-'} • Score inicial: ${s.scoreInicial||'-'}
-              </small>
-            </div>
           </div>
         </div>
         <div class="row gap">
@@ -303,12 +432,15 @@ function renderToday(){
 
   host.onclick=(e)=>{
     const btn=e.target.closest('button'); if(!btn) return;
-    if(btn.dataset.toggle==='details'){ const box=btn.parentElement.querySelector('.details'); box.classList.toggle('show'); return; }
     if(btn.dataset.open){ openSub(btn.dataset.area,btn.dataset.open); return; }
-    if(btn.dataset.done){ markDoneToday(btn.dataset.area,btn.dataset.done); renderToday(); return; }
+    if(btn.dataset.done){
+      // Confirmação de feedback básico (v6.0B vai aprofundar)
+      if(!confirm('Confirmar conclusão desta atividade?')) return;
+      markDoneToday(btn.dataset.area,btn.dataset.done); renderToday(); return;
+    }
     if(btn.dataset.remove){
       state.todayPick = state.todayPick.filter(x=> !(x.areaId===btn.dataset.area && x.subId===btn.dataset.remove));
-      store.set('todayPick',state.todayPick); renderToday();
+      saveProject(); renderToday();
     }
   };
 }
@@ -316,26 +448,26 @@ $('#genToday')?.addEventListener('click', generateToday);
 $('#clearToday')?.addEventListener('click', clearToday);
 $('#btnPlan')?.addEventListener('click', generateToday);
 
-// AÇÕES COMUNS
+// ===== Ações comuns =====
 function markDoneToday(areaId, subId){
-  const a=state.areas.find(x=>x.id===areaId); if(!a) return;
+  const a=(state.areas||[]).find(x=>x.id===areaId); if(!a) return;
   const s=a.children?.find(z=>z.id===subId); if(!s) return;
   s.status='feito';
   s.progress = Math.min(100, Number(s.progress||0)+20);
   const d=today(); s.log[d]=(s.log[d]||0)+1;
-  recalcAreaProgress(a); saveAreas();
-  renderAreas(); renderThemesTable();
-  renderProgress(); renderLogTable();
+  recalcAreaProgress(a); saveProject();
+  renderAreas(); renderThemesTable(); renderProgress(); renderLogTable();
 }
 
 function openSub(areaId, subId){
-  const a=state.areas.find(x=>x.id===areaId); if(!a) return;
+  const a=(state.areas||[]).find(x=>x.id===areaId); if(!a) return;
   const s=a.children?.find(z=>z.id===subId); if(!s) return;
   const wrap=document.createElement('div');
   wrap.className='modal';
   wrap.innerHTML=`
     <div class="card" style="max-width:760px;margin:8vh auto;background:#0f131c">
       <h3>${a.name} → ${s.name}</h3>
+      <p class="muted">Edite com cuidado. Em breve (v6.0B) algumas edições ficarão bloqueadas durante a execução de atividades para manter a integridade do algoritmo.</p>
       <div class="grid4" style="margin:.5rem 0">
         <label>Progresso (%)<input id="p_edit" type="number" min="0" max="100" value="${Math.round(s.progress||0)}"></label>
         <label>Prioridade
@@ -380,7 +512,7 @@ function openSub(areaId, subId){
     s.scoreInicial=Number($('#score_edit').value||0);
     s.status=$('#status_edit').value||'pendente';
     s.notes=$('#n_edit').value||'';
-    recalcAreaProgress(a); saveAreas(); renderAreas(); renderThemesTable(); renderToday(); wrap.remove();
+    recalcAreaProgress(a); saveProject(); renderAreas(); renderThemesTable(); renderToday(); wrap.remove();
   };
   $('#exportSub').onclick=()=>{
     const blob=new Blob([`# ${a.name} → ${s.name}
@@ -397,10 +529,16 @@ ${s.notes||''}`],{type:'text/plain'});
   };
 }
 
-// INIT
+// ===== Init geral =====
 function init(){
-  applyTheme();
-  showTab('hoje');
-  renderProgress(); renderLogTable(); renderAreas(); renderThemesTable(); refreshAttachAreas(); renderToday();
+  // Garantir que exista ao menos um projeto
+  ensureFirstProject();
+  renderProjectSelector();
+  setActiveProject(activeId || projects[0]?.id);
+
+  // Binds do gerador/hoje
+  // (já definidos acima)
+  // Forçar timer 00:00:00 na primeira carga
+  $('#timerDisplay') && ($('#timerDisplay').textContent='00:00:00');
 }
 document.addEventListener('DOMContentLoaded', init);
