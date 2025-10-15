@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Plataforma de Estudos Inteligente</title>
-  <link rel="stylesheet" href="style.css?v=560" />
+  <link rel="stylesheet" href="style.css?v=600a" />
 </head>
 <body>
 <header class="top">
@@ -13,7 +13,17 @@
       <h1>📘 Plataforma de Estudos Inteligente</h1>
       <p class="muted">Estudo direcionado e organizado — pronto para qualquer prova.</p>
     </div>
-    <div class="row gap">
+    <div class="row gap wrap">
+      <!-- Seletor de Projeto -->
+      <div class="proj-wrap">
+        <label class="muted small">Projeto</label>
+        <div class="row gap">
+          <select id="projectSelect"></select>
+          <button id="projectNew" class="btn small">Novo</button>
+          <button id="projectRename" class="btn small ghost">Renomear</button>
+          <button id="projectDelete" class="btn small secondary">Excluir</button>
+        </div>
+      </div>
       <button id="themeToggle" class="btn ghost" title="Alternar estilo visual">🎨 Estilo: <span id="themeLabel">Minimalista</span></button>
     </div>
   </div>
@@ -90,7 +100,7 @@
         <button id="saveNotes" class="btn">Salvar</button>
         <button id="clearNotes" class="btn secondary">Limpar</button>
       </div>
-      <small class="muted">Salvo localmente neste dispositivo.</small>
+      <small class="muted">Salvo localmente neste dispositivo (por projeto).</small>
     </div>
 
     <div class="card">
@@ -105,10 +115,10 @@
   <!-- TEMAS -->
   <section id="page-temas" class="page hidden">
     <div class="card">
-      <h2>Temas cadastrados</h2>
+      <h2>Temas cadastrados (Projeto atual)</h2>
       <div class="row wrap gap">
-        <button id="backupExport" class="btn ghost">📦 Fazer backup</button>
-        <label class="btn ghost">📥 Restaurar backup
+        <button id="backupExport" class="btn ghost">📦 Fazer backup (projeto)</button>
+        <label class="btn ghost">📥 Restaurar backup (projeto)
           <input id="backupImport" type="file" accept="application/json" hidden>
         </label>
         <span class="muted">Use para migrar seus dados entre dispositivos.</span>
@@ -185,6 +195,6 @@
 
 <footer class="foot">Projeto Plataforma de Estudos © 2025</footer>
 
-<script src="app.js?v=560"></script>
+<script src="app.js?v=600a"></script>
 </body>
 </html>
