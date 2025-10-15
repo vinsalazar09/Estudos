@@ -1,99 +1,176 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Plataforma de Estudos Inteligente</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=555" />
 </head>
-
 <body>
-  <header>
-    <h1>📘 Plataforma de Estudos Inteligente</h1>
-    <p>Foco: estudo direcionado e organizado para sua preparação.</p>
-    <div class="h-row" style="margin-top:1rem;gap:.75rem">
-      <button id="generatePlan" class="btn primary">🪄 Gerar Atividade</button>
-      <button class="btn" data-tab="home">Início</button>
-      <button class="btn" data-tab="hierarquia">Hierarquia</button>
-    </div>
-  </header>
+<header class="top">
+  <h1>📘 Plataforma de Estudos Inteligente</h1>
+  <p class="muted">Estudo direcionado e organizado — pronto para qualquer prova.</p>
+  <div class="top-actions">
+    <button id="btnPlan" class="btn primary">🪄 Gerar plano de hoje</button>
+    <button class="btn tab active" data-tab="hoje">Hoje</button>
+    <button class="btn tab" data-tab="temas">Temas</button>
+    <button class="btn tab" data-tab="areas">Áreas</button>
+  </div>
+</header>
 
-  <main>
-    <!-- ======== ABA INÍCIO ======== -->
-    <section id="home" class="tab-content">
-      <h2>🎯 Planejamento do Dia</h2>
+<main class="container">
 
-      <div class="panel">
-        <div class="h-row" style="align-items:flex-start;gap:1rem;flex-wrap:wrap">
-          <div style="flex:1">
-            <h3>Meta diária</h3>
-            <input type="number" id="goalInput" placeholder="Minutos de estudo" min="10" step="5" value="60">
-            <button id="saveGoal" class="btn">Salvar meta</button>
-          </div>
-
-          <div style="flex:1">
-            <h3>Progresso (do dia)</h3>
-            <div class="progress-wrap">
-              <div id="progressBar" class="progress"></div>
-            </div>
-            <p id="progressLabel" style="margin-top:.3rem">0 / 0 min</p>
-            <button id="addQuick15" class="btn small">+15 min rápido</button>
-          </div>
+  <!-- HOJE -->
+  <section id="page-hoje" class="page">
+    <div class="card">
+      <h2>Gerador do Dia</h2>
+      <div class="grid4">
+        <label>Data da prova (opcional)
+          <input id="examDate" type="date">
+        </label>
+        <label>Temas por dia
+          <input id="topicsPerDay" type="number" min="1" step="1" value="2">
+        </label>
+        <label>Mostrar concluídos
+          <select id="showDone">
+            <option>Não</option><option>Sim</option>
+          </select>
+        </label>
+        <div class="row gap end">
+          <button id="genToday" class="btn">Gerar plano de hoje</button>
+          <button id="clearToday" class="btn secondary">Limpar seleção de hoje</button>
         </div>
       </div>
+      <div class="chips row wrap gap">
+        <span class="chip" id="kpiTopics">Temas: 0</span>
+        <span class="chip" id="kpiDone">Concluídos: 0</span>
+        <span class="chip" id="kpiProg">Progresso: 0%</span>
+        <span class="chip" id="kpiDays">Dias até a prova: -</span>
+      </div>
+    </div>
 
-      <div class="panel collapsible">
-        <h3>⏱️ Cronômetro <small class="muted">(opcional)</small></h3>
-        <div id="timerWrap" style="display:none;margin-top:.75rem">
-          <p id="timerDisplay">00:00:00</p>
-          <div class="btn-row">
+    <div class="stack" id="todayList"></div>
+
+    <div class="card">
+      <h2>Meta, Progresso e Cronômetro</h2>
+      <div class="grid3">
+        <div>
+          <h3>Meta diária</h3>
+          <input id="goalInput" type="number" min="10" step="5" placeholder="60" />
+          <button id="saveGoal" class="btn">Salvar meta</button>
+        </div>
+        <div>
+          <h3>Progresso (hoje)</h3>
+          <div class="bar"><div id="progressBar"></div></div>
+          <div id="progressLabel" class="muted">0 / 0 min</div>
+          <button id="addQuick15" class="btn small">+15 min rápido</button>
+        </div>
+        <div>
+          <h3>⏱️ Cronômetro (opcional)</h3>
+          <div class="row gap">
             <button id="startTimer" class="btn">Iniciar</button>
             <button id="stopTimer" class="btn secondary">Parar</button>
             <button id="resetTimer" class="btn ghost">Zerar</button>
           </div>
+          <div id="timerDisplay" class="timer">00:00:00</div>
         </div>
-        <button class="btn ghost small" data-collapse="timer">clicar para mostrar/ocultar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📝 Notas rápidas</h3>
+      <textarea id="quickNotes" rows="5" placeholder="Anote ideias, referências, Q&A..."></textarea>
+      <div class="row gap">
+        <button id="saveNotes" class="btn">Salvar</button>
+        <button id="clearNotes" class="btn secondary">Limpar</button>
+      </div>
+      <small class="muted">Salvo localmente neste dispositivo.</small>
+    </div>
+
+    <div class="card">
+      <h3>📅 Hoje em foco</h3>
+      <table class="table">
+        <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TEMAS -->
+  <section id="page-temas" class="page hidden">
+    <div class="card">
+      <h2>Temas cadastrados</h2>
+      <div class="row wrap gap">
+        <button id="exportJson" class="btn ghost">Exportar JSON</button>
+        <label class="btn ghost">Importar JSON
+          <input id="importJson" type="file" accept="application/json" hidden>
+        </label>
+      </div>
+      <table class="table" style="margin-top:1rem">
+        <thead>
+          <tr>
+            <th>Tema</th><th>Área</th><th>Prio</th><th>Dif.</th><th>Status</th><th>Progresso</th><th>Último</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="themesBody"><tr><td colspan="8">Nenhum tema cadastrado.</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Adicionar tema</h3>
+      <div class="grid4">
+        <input id="newThemeName" type="text" placeholder="Ex: Fasceíte plantar">
+        <select id="newPriority">
+          <option value="5">Prioridade 5 (alta)</option>
+          <option value="4">Prioridade 4</option>
+          <option value="3" selected>Prioridade 3</option>
+          <option value="2">Prioridade 2</option>
+          <option value="1">Prioridade 1 (baixa)</option>
+        </select>
+        <select id="newDifficulty">
+          <option value="alta">Dificuldade alta</option>
+          <option value="média" selected>Dificuldade média</option>
+          <option value="fácil">Dificuldade fácil</option>
+        </select>
+        <select id="attachArea"></select>
+      </div>
+      <input id="newComment" type="text" placeholder="Comentário (opcional)" style="margin:.5rem 0">
+      <div class="row gap">
+        <button id="addTheme" class="btn">Adicionar tema</button>
+        <button id="bulkToggle" class="btn ghost">Adicionar em massa</button>
       </div>
 
-      <div class="panel">
-        <h3>📝 Notas Rápidas</h3>
-        <textarea id="quickNotes" rows="5" placeholder="Digite suas anotações..."></textarea>
-        <div class="btn-row" style="margin-top:.5rem">
-          <button id="saveNotes" class="btn">Salvar</button>
-          <button id="clearNotes" class="btn secondary">Limpar</button>
+      <div id="bulkWrap" class="hidden" style="margin-top:.6rem">
+        <p class="muted">Cole uma lista (um por linha). Formatos aceitos:<br>
+          <code>Tema</code> • <code>Tema | prio=5 | dif=alta</code></p>
+        <textarea id="bulkText" rows="6" placeholder="Exemplo:
+Fasceíte plantar | prio=5 | dif=alta
+Deformidade de Haglund | prio=4 | dif=média"></textarea>
+        <div class="row gap">
+          <select id="bulkArea"></select>
+          <button id="bulkAdd" class="btn">Adicionar lista</button>
         </div>
-        <small class="muted">Tudo é salvo localmente neste dispositivo.</small>
       </div>
+    </div>
+  </section>
 
-      <div class="panel">
-        <h3>📅 Hoje em Foco</h3>
-        <p class="muted">Resumo automático do seu dia de estudo.</p>
-        <table class="log-table">
-          <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
-          <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
-        </table>
+  <!-- ÁREAS -->
+  <section id="page-areas" class="page hidden">
+    <div class="card">
+      <h2>Áreas e Subtemas</h2>
+      <div class="row gap">
+        <input id="areaName" type="text" class="flex1" placeholder="Nova área (ex: Ombro)">
+        <button id="addArea" class="btn">Adicionar área</button>
       </div>
-    </section>
+    </div>
 
-    <!-- ======== ABA HIERARQUIA ======== -->
-    <section id="hierarquia" class="tab-content" style="display:none">
-      <h2>📂 Áreas e Subtemas</h2>
-      <p class="muted">Crie e organize suas áreas e subtemas conforme desejar.</p>
+    <div id="areasList" class="stack" style="margin-top:1rem"></div>
+  </section>
 
-      <div class="panel" style="margin-top:1rem">
-        <div class="h-row" style="align-items:center;gap:.5rem">
-          <input type="text" id="areaName" placeholder="Nova área (ex: Ombro)" style="flex:1">
-          <button id="addArea" class="btn">Adicionar Área</button>
-        </div>
-        <div id="areasList" style="margin-top:1rem"></div>
-      </div>
-    </section>
-  </main>
+</main>
 
-  <footer>
-    <p class="muted">Desenvolvido por Vinícius R. V. Salazar — Projeto Plataforma de Estudos © 2025</p>
-  </footer>
+<footer class="foot">Projeto Plataforma de Estudos © 2025</footer>
 
- <script src="script_v53.js"></script>
+<script src="app.js?v=555"></script>
 </body>
 </html>
