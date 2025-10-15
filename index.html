@@ -2,199 +2,82 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Plataforma de Estudos Inteligente</title>
-  <link rel="stylesheet" href="style.css?v=600a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plataforma Inteligente de Estudos</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header class="top">
-  <div class="row between center wrap">
-    <div>
-      <h1>📘 Plataforma de Estudos Inteligente</h1>
-      <p class="muted">Estudo direcionado e organizado — pronto para qualquer prova.</p>
-    </div>
-    <div class="row gap wrap">
-      <!-- Seletor de Projeto -->
-      <div class="proj-wrap">
-        <label class="muted small">Projeto</label>
-        <div class="row gap">
-          <select id="projectSelect"></select>
-          <button id="projectNew" class="btn small">Novo</button>
-          <button id="projectRename" class="btn small ghost">Renomear</button>
-          <button id="projectDelete" class="btn small secondary">Excluir</button>
+  <main id="app">
+    <section id="gate">
+      <h1>✨ Plataforma Inteligente de Estudos</h1>
+      <p>Como gostaria de chamar o seu projeto?</p>
+      <input id="projectName" placeholder="Ex: Prova TEOT, Concurso, etc." />
+      <p>Escolha seu estilo:</p>
+      <div class="style-row">
+        <button class="style-btn" data-style="ludico">🎨 Lúdico</button>
+        <button class="style-btn" data-style="minimalista">🩶 Minimalista</button>
+      </div>
+      <button id="startProject">Começar</button>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <header>
+        <h2 id="projTitle"></h2>
+        <div class="nav">
+          <button data-tab="home">🏠 Início</button>
+          <button data-tab="hierarquia">📚 Temas</button>
+          <button data-tab="prova">📘 Sobre a Prova</button>
+          <button data-tab="programa">🗓️ Programa</button>
+          <button data-tab="ia">🤖 IA</button>
         </div>
+      </header>
+
+      <div id="tab-home" class="tab">
+        <h3>Visão Geral</h3>
+        <button id="generatePlan">🪄 Gerar Atividade</button>
+        <div id="feedbackArea"></div>
       </div>
-      <button id="themeToggle" class="btn ghost" title="Alternar estilo visual">🎨 Estilo: <span id="themeLabel">Minimalista</span></button>
-    </div>
-  </div>
 
-  <div class="top-actions">
-    <button id="btnPlan" class="btn primary">🪄 Gerar plano de hoje</button>
-    <button class="btn tab active" data-tab="hoje">Hoje</button>
-    <button class="btn tab" data-tab="temas">Temas</button>
-    <button class="btn tab" data-tab="areas">Áreas</button>
-  </div>
-</header>
-
-<main class="container">
-
-  <!-- HOJE -->
-  <section id="page-hoje" class="page">
-    <div class="card">
-      <h2>Gerador do Dia</h2>
-      <div class="grid4">
-        <label>Data da prova (opcional)
-          <input id="examDate" type="date">
-        </label>
-        <label>Temas por dia
-          <input id="topicsPerDay" type="number" min="1" step="1" value="2">
-        </label>
-        <label>Mostrar concluídos
-          <select id="showDone"><option>Não</option><option>Sim</option></select>
-        </label>
-        <div class="row gap end">
-          <button id="genToday" class="btn">Gerar plano de hoje</button>
-          <button id="clearToday" class="btn secondary">Limpar seleção</button>
-        </div>
-      </div>
-      <div class="chips row wrap gap">
-        <span class="chip" id="kpiTopics">Temas: 0</span>
-        <span class="chip" id="kpiDone">Concluídos: 0</span>
-        <span class="chip" id="kpiProg">Progresso do dia: 0%</span>
-        <span class="chip" id="kpiDays">Dias até a prova: -</span>
-      </div>
-    </div>
-
-    <div class="stack" id="todayList"></div>
-
-    <div class="card">
-      <h2>Meta, Progresso e Cronômetro</h2>
-      <div class="grid3">
+      <div id="tab-hierarquia" class="tab hidden">
+        <h3>Organização de Estudos</h3>
         <div>
-          <h3>Meta diária</h3>
-          <input id="goalInput" type="number" min="10" step="5" placeholder="60" />
-          <button id="saveGoal" class="btn">Salvar meta</button>
+          <input id="areaName" placeholder="Nova área" />
+          <button id="addArea">Criar Área</button>
         </div>
-        <div>
-          <h3>Progresso (hoje)</h3>
-          <div class="bar"><div id="progressBar"></div></div>
-          <div id="progressLabel" class="muted">0 / 0 min</div>
-          <button id="addQuick15" class="btn small">+15 min rápido</button>
-        </div>
-        <div>
-          <h3>⏱️ Cronômetro (opcional)</h3>
-          <div class="row gap">
-            <button id="startTimer" class="btn">Iniciar</button>
-            <button id="stopTimer" class="btn secondary">Parar</button>
-            <button id="resetTimer" class="btn ghost">Zerar</button>
-          </div>
-          <div id="timerDisplay" class="timer">00:00:00</div>
-        </div>
+        <div id="areasList"></div>
       </div>
-    </div>
 
-    <div class="card">
-      <h3>📝 Notas rápidas</h3>
-      <textarea id="quickNotes" rows="5" placeholder="Anote ideias, referências, Q&A..."></textarea>
-      <div class="row gap">
-        <button id="saveNotes" class="btn">Salvar</button>
-        <button id="clearNotes" class="btn secondary">Limpar</button>
-      </div>
-      <small class="muted">Salvo localmente neste dispositivo (por projeto).</small>
-    </div>
-
-    <div class="card">
-      <h3>📅 Hoje em foco</h3>
-      <table class="table">
-        <thead><tr><th>Data</th><th>Tempo (min)</th></tr></thead>
-        <tbody id="logBody"><tr><td colspan="2">Nenhum registro ainda.</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- TEMAS -->
-  <section id="page-temas" class="page hidden">
-    <div class="card">
-      <h2>Temas cadastrados (Projeto atual)</h2>
-      <div class="row wrap gap">
-        <button id="backupExport" class="btn ghost">📦 Fazer backup (projeto)</button>
-        <label class="btn ghost">📥 Restaurar backup (projeto)
-          <input id="backupImport" type="file" accept="application/json" hidden>
-        </label>
-        <span class="muted">Use para migrar seus dados entre dispositivos.</span>
-      </div>
-      <table class="table" style="margin-top:1rem">
-        <thead>
-          <tr>
-            <th>Tema</th><th>Área</th><th>Prio</th><th>Dif.</th><th>Aula vista?</th><th>Rendimento</th><th>Progresso</th><th>Último</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="themesBody"><tr><td colspan="9">Nenhum tema cadastrado.</td></tr></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h3>Adicionar tema</h3>
-      <div class="grid4">
-        <input id="newThemeName" type="text" placeholder="Ex: Fasceíte plantar">
-        <select id="newPriority">
-          <option value="5">Prioridade 5 (alta)</option><option value="4">4</option>
-          <option value="3" selected>3</option><option value="2">2</option><option value="1">1 (baixa)</option>
+      <div id="tab-prova" class="tab hidden">
+        <h3>📘 Sobre a Prova</h3>
+        <input id="examName" placeholder="Nome da prova" />
+        <input id="examDate" type="date" />
+        <select id="examType">
+          <option value="objetiva">Objetiva</option>
+          <option value="oral">Oral</option>
+          <option value="pratica">Prática</option>
+          <option value="mista">Mista</option>
         </select>
-        <select id="newDifficulty">
-          <option value="alta">Dificuldade alta</option>
-          <option value="média" selected>Dificuldade média</option>
-          <option value="fácil">Dificuldade fácil</option>
-        </select>
-        <select id="attachArea"></select>
-      </div>
-      <div class="grid4" style="margin-top:.5rem">
-        <select id="seenClass">
-          <option value="nao">Aula vista? Não</option>
-          <option value="sim">Aula vista? Sim</option>
-        </select>
-        <select id="initialYield">
-          <option value="ruim">Rendimento inicial: Ruim</option>
-          <option value="medio" selected>Rendimento inicial: Médio</option>
-          <option value="bom">Rendimento inicial: Bom</option>
-        </select>
-        <input id="initialScore" type="number" min="0" max="100" placeholder="% acertos (opcional)">
-        <input id="newComment" type="text" placeholder="Comentário (opcional)">
-      </div>
-      <div class="row gap" style="margin-top:.5rem">
-        <button id="addTheme" class="btn">Adicionar tema</button>
-        <button id="bulkToggle" class="btn ghost">Adicionar em massa</button>
+        <textarea id="examNotes" placeholder="Observações ou detalhes"></textarea>
+        <button id="saveExam">Salvar informações</button>
       </div>
 
-      <div id="bulkWrap" class="hidden" style="margin-top:.6rem">
-        <p class="muted">Cole uma lista (um por linha). Exemplos:<br>
-          <code>Tema</code> • <code>Tema | prio=5 | dif=alta | aula=sim | rend=medio | score=70</code></p>
-        <textarea id="bulkText" rows="6" placeholder="Fasceíte plantar | prio=5 | dif=alta | aula=sim | rend=medio"></textarea>
-        <div class="row gap">
-          <select id="bulkArea"></select>
-          <button id="bulkAdd" class="btn">Adicionar lista</button>
-        </div>
+      <div id="tab-programa" class="tab hidden">
+        <h3>🗓️ Programa de Estudos</h3>
+        <p>Defina seus horários semanais de estudo:</p>
+        <textarea id="studySchedule" rows="6" placeholder="Ex: Seg–Sex 18h às 22h; Sáb 9h às 13h"></textarea>
+        <button id="saveSchedule">Salvar Programa</button>
       </div>
-    </div>
-  </section>
 
-  <!-- ÁREAS -->
-  <section id="page-areas" class="page hidden">
-    <div class="card">
-      <h2>Áreas e Subtemas</h2>
-      <div class="row gap">
-        <input id="areaName" type="text" class="flex1" placeholder="Nova área (ex: Ombro)">
-        <button id="addArea" class="btn">Adicionar área</button>
+      <div id="tab-ia" class="tab hidden">
+        <h3>Integração com IA</h3>
+        <p>Selecione a IA que deseja usar para gerar materiais:</p>
+        <button data-ia="chatgpt">💬 ChatGPT</button>
+        <button data-ia="claude">🧠 Claude</button>
+        <button data-ia="perplexity">🔎 Perplexity</button>
+        <textarea id="iaPrompt" placeholder="Digite ou gere automaticamente um prompt..."></textarea>
       </div>
-    </div>
-
-    <div id="areasList" class="stack" style="margin-top:1rem"></div>
-  </section>
-
-</main>
-
-<footer class="foot">Projeto Plataforma de Estudos © 2025</footer>
-
-<script src="app.js?v=600a"></script>
+    </section>
+  </main>
+  <script src="app.js"></script>
 </body>
 </html>
