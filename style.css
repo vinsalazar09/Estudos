@@ -1,47 +1,61 @@
 :root{
   --bg:#0f1115; --card:#171a21; --text:#e7eef8; --muted:#9aa4af;
-  --border:#2a2f3a; --accent:#4da3ff; --accent2:#28d09a;
+  --border:#2a2f3a; --accent:#4da3ff; --accent2:#28d09a; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+}
+[data-theme="ludico"]{
+  --bg:#0b1020; --card:#0f1630; --border:#1a2340; --accent:#7db7ff; --accent2:#3be2a1;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.top{padding:1.2rem;border-bottom:1px solid var(--border);text-align:center}
-.top h1{margin:.2rem 0 .3rem}
+.top{padding:1.2rem;border-bottom:1px solid var(--border)}
 .muted{color:var(--muted)}
-.top-actions{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:.6rem}
 .container{max-width:1150px;margin:0 auto;padding:1rem}
 .foot{border-top:1px solid var(--border);text-align:center;color:var(--muted);padding:1rem}
 
-.btn{background:#223047;color:#e9f0fb;border:1px solid var(--border);border-radius:10px;padding:.55rem .9rem;cursor:pointer;transition:transform .15s}
-.btn:hover{transform:translateY(-1px);border-color:var(--accent)}
+/* Botões */
+.btn{background:#223047;color:#e9f0fb;border:1px solid var(--border);border-radius:12px;padding:.55rem .9rem;cursor:pointer;transition:transform .15s, box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.25);border-color:var(--accent)}
 .btn.primary{background:var(--accent);color:#09121f;border:none}
 .btn.secondary{background:#273043}
 .btn.ghost{background:transparent}
 .btn.small{padding:.35rem .55rem}
 .btn.tab.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.top-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem;justify-content:center}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem}
+/* Cards e layout */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem;animation:rise .18s ease}
+@keyframes rise{from{transform:translateY(2px);opacity:.98}to{transform:none;opacity:1}}
 .stack{display:grid;gap:.8rem}
-.row{display:flex}.row.gap{gap:.6rem}.row.wrap{flex-wrap:wrap}.row.end{justify-content:flex-end}
+.row{display:flex}.row.gap{gap:.6rem}.row.wrap{flex-wrap:wrap}.row.end{justify-content:flex-end}.row.between{justify-content:space-between}.row.center{align-items:center}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
 .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
-
 input,select,textarea{background:#0f131c;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:.55rem;width:100%}
 textarea{width:100%}
 .flex1{flex:1}
 
+/* Barras e chips */
 .bar{background:#121725;border:1px solid var(--border);border-radius:999px;height:10px;overflow:hidden}
 #progressBar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}
 .timer{font-size:1.35rem;margin-top:.4rem}
+.chips{margin-top:.6rem}
+.chip{display:inline-block;background:#101523;border:1px solid var(--border);color:#cbd5e1;border-radius:999px;padding:.25rem .55rem;font-size:.8rem}
 
+/* Tabelas */
 .table{width:100%;border-collapse:collapse;background:#0f131c;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .table th,.table td{padding:.6rem .7rem;border-bottom:1px solid var(--border)}
 .table thead th{background:#101523;color:#cfd8e3;text-align:left}
 
+/* Cartõezinhos */
 .hcard{background:#151a24;border:1px solid var(--border);border-radius:12px;padding:.9rem}
 .badge{display:inline-block;padding:.15rem .5rem;border-radius:999px;background:#1c2230;border:1px solid var(--border);font-size:.75rem;color:#c8d1dd}
 
-.chips{margin-top:.6rem}
-.chip{display:inline-block;background:#101523;border:1px solid var(--border);color:#cbd5e1;border-radius:999px;padding:.25rem .55rem;font-size:.8rem}
+/* Hoje: sugestão */
+.suggestion{border-left:4px solid var(--accent);padding-left:.7rem;margin-top:.4rem}
+.suggestion.good{border-color:var(--good)}
+.suggestion.warn{border-color:var(--warn)}
+.suggestion.bad{border-color:var(--bad)}
+.details{margin-top:.4rem;background:#0d1322;border:1px dashed var(--border);border-radius:10px;padding:.6rem;display:none}
+.details.show{display:block}
 
 .hidden{display:none}
 .page.hidden{display:none}
